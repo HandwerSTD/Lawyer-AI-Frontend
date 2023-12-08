@@ -4,18 +4,18 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:lawyer_ai_frontend/short_video/short_video_play.dart';
 import 'package:waterfall_flow/waterfall_flow.dart';
 
-class ShortVideoWaterfallPage extends StatefulWidget {
+class ShortVideoWaterfallList extends StatefulWidget {
   List<VideoDataModel> videoList;
   Function loadMoreContent;
-  ShortVideoWaterfallPage(
+  ShortVideoWaterfallList(
       {super.key, required this.videoList, required this.loadMoreContent});
 
   @override
-  State<ShortVideoWaterfallPage> createState() =>
-      _ShortVideoWaterfallPageState();
+  State<ShortVideoWaterfallList> createState() =>
+      _ShortVideoWaterfallListState();
 }
 
-class _ShortVideoWaterfallPageState extends State<ShortVideoWaterfallPage> {
+class _ShortVideoWaterfallListState extends State<ShortVideoWaterfallList> {
   List<VideoDataModel> sttVideoList = [];
 
   ScrollController wfController = ScrollController();
@@ -25,10 +25,11 @@ class _ShortVideoWaterfallPageState extends State<ShortVideoWaterfallPage> {
     super.initState();
     sttVideoList = widget.videoList;
 
-    wfController.addListener(() {
+    wfController.addListener(() async {
       if (wfController.position.pixels ==
           wfController.position.maxScrollExtent) {
-        widget.loadMoreContent(); // 到底部加载新内容
+        print("[ShortVideoList] Scrolled to end, loading data");
+        widget.loadMoreContent(() {}); // 到底部加载新内容
       }
     });
   }
@@ -55,7 +56,7 @@ class _ShortVideoWaterfallPageState extends State<ShortVideoWaterfallPage> {
             Navigator.push(
                 context,
                 MaterialPageRoute(
-                    builder: (context) => const ShortVideoPlay()));
+                    builder: (context) => ShortVideoPlay(videos: sttVideoList, videoIndex: sttVideoList.indexOf(video), loadMoreContent: widget.loadMoreContent,)));
           },
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -66,7 +67,7 @@ class _ShortVideoWaterfallPageState extends State<ShortVideoWaterfallPage> {
                 child: CachedNetworkImage(
                   imageUrl: video.videoImageLink,
                   placeholder: (context, url) => const Center(
-                    child: CircularProgressIndicator(),
+                    child: SizedBox(height: 300, child: Center(child: CircularProgressIndicator(),),)
                   ),
                   errorWidget: (context, url, error) => const Icon(Icons.error),
                 ),

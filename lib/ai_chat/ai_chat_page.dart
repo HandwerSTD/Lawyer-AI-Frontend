@@ -113,9 +113,6 @@ class _AIChatPageState extends State<AIChatPage> {
                       fontSize: 15
                   ),
                 ),
-                // if (!msgData.isMine) {
-                //   const Divider()
-                // }.first,
                 if (!msgData.isMine) {
                   const Padding(padding: EdgeInsets.only(top: 4), child: Text("对话由 AI 大模型生成，仅供参考", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black54),),)
                 }.first

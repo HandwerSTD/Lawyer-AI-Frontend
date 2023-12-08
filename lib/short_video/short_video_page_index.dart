@@ -39,7 +39,7 @@ class _ShortVideoPageIndexState extends State<ShortVideoPageIndex> {
       });
     }
   }
-  void loadMoreContent() {
+  void loadMoreContent(Function? callback)  {
     /* TODO: Implement API */
     for (int index = 0; index < 10; ++index) {
       http.get(Uri.parse('https://api.likepoems.com/img/pe/?type=JSON'))
@@ -57,6 +57,7 @@ class _ShortVideoPageIndexState extends State<ShortVideoPageIndex> {
                 "", videoImageURL, title
             ));
           });
+          if (callback != null) callback();
         });
       });
     }
@@ -83,7 +84,7 @@ class _ShortVideoPageIndexState extends State<ShortVideoPageIndex> {
         ],
       ),
       body: Center(
-        child: ShortVideoWaterfallPage(videoList: sttVideoList, loadMoreContent: loadMoreContent),
+        child: ShortVideoWaterfallList(videoList: sttVideoList, loadMoreContent: loadMoreContent),
       ),
     );
   }

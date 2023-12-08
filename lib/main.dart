@@ -12,7 +12,7 @@ void main() {
         useMaterial3: true,
         fontFamily: "HarmonyOS Sans SC"
       ),
-      home: const MyApp()
+      home: MyApp()
     )
   );
 }
