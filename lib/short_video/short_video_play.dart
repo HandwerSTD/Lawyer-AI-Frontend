@@ -1,7 +1,14 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
+import 'package:lawyer_ai_frontend/common/constant/constants.dart';
+import 'package:lawyer_ai_frontend/common/theme/theme.dart';
 import 'package:lawyer_ai_frontend/short_video/short_video_comment_page.dart';
 import 'package:lawyer_ai_frontend/short_video/short_video_page_index.dart';
+import 'package:video_player/video_player.dart';
+import 'package:http/http.dart' as http;
+
+import '../common/data_model/data_models.dart';
 
 class ShortVideoPlay extends StatefulWidget {
   List<VideoDataModel> videos;
@@ -22,6 +29,8 @@ class _ShortVideoPlayState extends State<ShortVideoPlay> {
   List<VideoDataModel> videos = [];
   int videoIndex = 0;
   PageController pgController = PageController();
+  late VideoPlayerController videoPlayerController;
+  late ChewieController videoController;
 
   @override
   void initState() {
@@ -29,6 +38,13 @@ class _ShortVideoPlayState extends State<ShortVideoPlay> {
     videos = widget.videos;
     videoIndex = widget.videoIndex;
     pgController = PageController(initialPage: videoIndex);
+    print(serverAddress + API.videoFile.api + videos[videoIndex].videoSha1);
+    videoPlayerController = VideoPlayerController.networkUrl(Uri.parse(serverAddress + API.videoFile.api + videos[videoIndex].videoSha1));
+    videoController = ChewieController(
+      autoInitialize: true,
+        autoPlay: true,
+        videoPlayerController: videoPlayerController
+    );
   }
 
   @override
@@ -42,15 +58,7 @@ class _ShortVideoPlayState extends State<ShortVideoPlay> {
           backgroundColor: Colors.black,
           foregroundColor: Colors.white,
         ),
-        body: GestureDetector(
-          onTap: () {
-            // TODO: Pause Video
-            print("[ShortVideoPlay] Video Tap -> Paused");
-          },
-          onDoubleTap: () {
-            // TODO: Like & Dislike
-          },
-          child: PageView(
+        body: PageView(
             controller: pgController,
             scrollDirection: Axis.vertical,
             onPageChanged: (index) {
@@ -71,58 +79,78 @@ class _ShortVideoPlayState extends State<ShortVideoPlay> {
             },
             children: pageViewList,
           ),
-        ));
+        );
   }
 
   Widget videoPlayBlock(VideoDataModel video) {
     return Column(
       mainAxisSize: MainAxisSize.max,
       children: [
-        Expanded(
-            child: Stack(
+        Flexible(child: Stack(
           alignment: Alignment.center,
           children: [
             Container(
-              padding: EdgeInsets.all(6),
-              child: CachedNetworkImage(
-                imageUrl: video.videoImageLink,
-                placeholder: (context, url) => const Center(
-                    child: SizedBox(
-                  height: 300,
-                  child: Center(
-                    child: CircularProgressIndicator(),
-                  ),
-                )),
-                errorWidget: (context, url, error) => const Icon(Icons.error),
+              padding: EdgeInsets.all(2),
+              child: Chewie(
+                controller: videoController,
               ),
             ),
-            bottomWidget(video),
+            bottomWidget(video, context),
           ],
-        )),
+        ))
       ],
     );
   }
 
-  Widget bottomWidget(VideoDataModel video) {
+  Widget bottomWidget(VideoDataModel video, BuildContext context) {
     return Row(
       children: [
         Flexible(child: Container(
-          decoration: BoxDecoration(),
+          decoration: const BoxDecoration(
+            // color: Colors.black12
+            gradient: LinearGradient(
+              begin: Alignment.bottomCenter,
+                end: Alignment(0, 0.5),
+                colors: [Colors.black54, Colors.transparent]
+            )
+          ),
           child: Row(
+            mainAxisSize: MainAxisSize.max,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Expanded(
-                  child: Padding(
-                      padding: EdgeInsets.only(
-                          left: 24, right: 12, top: 0, bottom: 12),
-                      child: Text(
-                        video.videoTitle,
-                        style: TextStyle(
+              Flexible(
+                child: Padding(
+                  padding: EdgeInsets.only(left: 24, right: 12, top: 0, bottom: 12),
+                  child: GestureDetector(
+                    onTap: () {
+                      print("[ShortVideoPlay] open desc");
+                      showModalBottomSheet(context: context, builder: (context) {
+                        return Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Padding(padding: EdgeInsets.only(left: 24, right: 24, top: 24, bottom: 0), child:
+                              Text(video.videoTitle, style: TextStyle(fontSize: 24),)
+                              ,),
+                            Padding(padding: EdgeInsets.only(left: 24, right: 24, bottom: 12), child: Divider(),),
+                            Padding(padding: EdgeInsets.only(left: 24, right: 24, bottom: 24), child:
+                            Text(video.videoDesc, style: TextStyle(fontSize: 16),),)
+                          ],
+                        );
+                      });
+                    },
+                    child: Text(
+                      video.videoTitle,
+                      style: TextStyle(
+                          shadows: kElevationToShadow[3],
                           color: Colors.white,
                           fontSize: 18,
-                        ),
-                        maxLines: 2,
-                      ))),
+                          fontWeight: FontWeight.bold
+                      ),
+                      maxLines: 2,
+                    ),
+                  ))),
               bottomFAB(video)
             ],
           ),
@@ -135,34 +163,37 @@ class _ShortVideoPlayState extends State<ShortVideoPlay> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        Padding(
-          padding: EdgeInsets.all(12),
-          child: IconButton(
-            onPressed: () {
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => ShortVideoCommentPage(
-                            video: video,
-                          )));
-            },
-            icon: Icon(
-              Icons.comment,
-              size: 36,
-            ),
-          ),
-        ),
-        Padding(
-          padding: EdgeInsets.all(12),
-          child: IconButton(
-            onPressed: () {},
-            icon: Icon(
-              Icons.share,
-              size: 36,
-            ),
-          ),
-        ),
+        bottomFABSingle(icon: Icons.thumb_up_outlined, onPressed: () {
+          // TODO: Like & Dislike
+        }),
+        bottomFABSingle(icon: Icons.comment, onPressed: () {
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => ShortVideoCommentPage(
+                    video: video,
+                  )));
+        }),
+        bottomFABSingle(icon: Icons.share, onPressed: () {
+          // TODO: Share
+        }),
       ],
+    );
+  }
+  Widget bottomFABSingle({required IconData icon, required Function onPressed}) {
+    return Padding(
+      padding: const EdgeInsets.all(12),
+      child: IconButton(
+        onPressed: () {
+          onPressed();
+        },
+        icon: Icon(
+          icon,
+          size: 36,
+          shadows: [fabBoxShadow],
+          color: Colors.white,
+        ),
+      ),
     );
   }
 }

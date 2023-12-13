@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lawyer_ai_frontend/short_video/short_video_page_index.dart';
 
 import '../account/my_account_page.dart';
+import '../common/data_model/data_models.dart';
 
 class ShortVideoCommentPage extends StatelessWidget {
   VideoDataModel video;
@@ -44,7 +45,7 @@ class _ShortVideoCommentListState extends State<ShortVideoCommentList> {
     setState(() {
       commentList.clear();
       for (int i = 0; i < 20; ++i) {
-        commentList.add(CommentDataModel(AccountDataModel("张翼德", 1, "https://i2.hdslb.com/bfs/face/e1b90070c6a3ec7e5ee0248b8124b39488e741ee.jpg"), widget.video.videoTitle));
+        commentList.add(CommentDataModel(AccountDataModel("张翼德", "", "https://i2.hdslb.com/bfs/face/e1b90070c6a3ec7e5ee0248b8124b39488e741ee.jpg", ""), widget.video.videoTitle));
       }
       print("[ShortVideoCommentPage] comment loaded: ${commentList.length}");
     });
@@ -53,12 +54,14 @@ class _ShortVideoCommentListState extends State<ShortVideoCommentList> {
     // TODO: Get comment list
     setState(() {
       for (int i = 0; i < 20; ++i) {
-        commentList.add(CommentDataModel(AccountDataModel("张翼德", 1, "https://i2.hdslb.com/bfs/face/e1b90070c6a3ec7e5ee0248b8124b39488e741ee.jpg"), widget.video.videoTitle));
+        commentList.add(CommentDataModel(AccountDataModel("张翼德", "", "https://i2.hdslb.com/bfs/face/e1b90070c6a3ec7e5ee0248b8124b39488e741ee.jpg", ""), widget.video.videoTitle));
       }
     });
   }
   void submitNewComment(String text) {
-    
+    if (text != "") {
+      // TODO: Submit new comment
+    }
   }
 
   @override
@@ -142,7 +145,7 @@ class CommentBlock extends StatelessWidget {
     );
   }
   Widget authorInfo() {
-    return Padding(padding: EdgeInsets.only(left: 24, bottom: 4), child: Row(
+    return Padding(padding: EdgeInsets.only(left: 24, bottom: 6), child: Row(
       mainAxisSize: MainAxisSize.max,
       children: [
         Icon(Icons.account_circle),
@@ -153,9 +156,4 @@ class CommentBlock extends StatelessWidget {
 }
 
 
-class CommentDataModel {
-  String content = "";
-  AccountDataModel author;
-  CommentDataModel(this.author, this.content);
-}
 

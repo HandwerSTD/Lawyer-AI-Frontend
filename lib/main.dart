@@ -1,6 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:lawyer_ai_frontend/account/my_account_page.dart';
+import 'package:lawyer_ai_frontend/common/data_model/data_models.dart';
 import 'package:lawyer_ai_frontend/short_video/short_video_page_index.dart';
+import 'package:provider/provider.dart';
 
 import 'ai_chat/ai_chat_page.dart';
 
@@ -12,7 +15,10 @@ void main() {
         useMaterial3: true,
         fontFamily: "HarmonyOS Sans SC"
       ),
-      home: MyApp()
+      home: ChangeNotifierProvider(
+        create: (context) => StorageDataModel(),
+        child: MyApp(),
+      ),
     )
   );
 }
@@ -25,6 +31,9 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  AccountDataModel loggedAccount = AccountDataModel("", "", "", "");
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -37,7 +46,9 @@ class _MyAppState extends State<MyApp> {
             }
             Navigator.push(context, MaterialPageRoute(builder: (context) => const ShortVideoPageIndex()));
           }),
-          appBarIconButton(icon: const Icon(Icons.account_circle), text: const Text("我的"), onPressed: () {}),
+          appBarIconButton(icon: const Icon(Icons.account_circle), text: const Text("我的"), onPressed: () {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => AccountPage(loggedAccount: loggedAccount,)));
+          }),
         ],
       ),
       body: const AIChatPage(),

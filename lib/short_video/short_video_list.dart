@@ -4,6 +4,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:lawyer_ai_frontend/short_video/short_video_play.dart';
 import 'package:waterfall_flow/waterfall_flow.dart';
 
+import '../common/data_model/data_models.dart';
+
 class ShortVideoWaterfallList extends StatefulWidget {
   List<VideoDataModel> videoList;
   Function loadMoreContent;

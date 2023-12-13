@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:lawyer_ai_frontend/common/theme/theme.dart';
+
+import '../common/data_model/data_models.dart';
 
 bool instanceFirstOpen = false;
 
@@ -98,7 +101,7 @@ class _AIChatPageState extends State<AIChatPage> {
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
                 color: background,
-                boxShadow: [BoxShadow(color: Colors.black26, offset: Offset.fromDirection(1, 1.3), spreadRadius: 0.05, blurRadius: 3)],
+                boxShadow: [textBlockBoxShadow],
                 borderRadius: BorderRadius.only(topLeft: const Radius.circular(20), topRight: const Radius.circular(20), bottomLeft: (msgData.isMine ? const Radius.circular(20) : const Radius.circular(8)), bottomRight: (!msgData.isMine ? const Radius.circular(20) : const Radius.circular(8)))
             ),
             child: Column(
@@ -129,12 +132,3 @@ class _AIChatPageState extends State<AIChatPage> {
 
 
 
-
-class ChatMsgData {
-  String message = "";
-  bool isMine = true;
-  ChatMsgData(String msg, bool mine) {
-    message = msg;
-    isMine = mine;
-  }
-}
