@@ -1,4 +1,3 @@
-
 import 'package:flutter/cupertino.dart';
 
 class ChatMsgData {
@@ -8,21 +7,41 @@ class ChatMsgData {
     message = msg;
     isMine = mine;
   }
+  void append(String ad) {
+    message += ad;
+  }
 }
 
 class VideoDataModel {
-  int id = 0;
+  String id = "";
+  String author = "";
+  String authorUid = "";
+  String commentId = "";
   String videoSha1 = "";
   String videoImageLink = "";
   String videoTitle = "";
   String videoDesc = "";
-  VideoDataModel(this.videoSha1, this.videoImageLink, this.videoTitle, this.videoDesc);
+  int gotLikes = 0;
+  int liked = -1; // -1: undefined
+  VideoDataModel(
+      {required this.videoSha1,
+      required this.videoImageLink,
+      required this.videoTitle,
+      required this.videoDesc,
+      required this.gotLikes,
+      required this.liked,
+      required this.authorUid,
+      required this.id,
+      required this.author,
+      required this.commentId});
 }
 
 class CommentDataModel {
   String content = "";
   AccountDataModel author;
-  CommentDataModel(this.author, this.content);
+  double timestamp;
+  bool expand = false;
+  CommentDataModel(this.author, this.content, this.timestamp);
 }
 
 class AccountDataModel {
@@ -39,6 +58,7 @@ class StorageDataModel extends ChangeNotifier {
   void notify() {
     notifyListeners();
   }
+
   void modifyAccount(AccountDataModel acc) {
     loggedAccount = acc;
     notifyListeners();

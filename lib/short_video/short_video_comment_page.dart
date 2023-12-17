@@ -1,12 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:lawyer_ai_frontend/common/theme/theme.dart';
+import 'package:lawyer_ai_frontend/common/utils/time_utils.dart';
+import 'package:lawyer_ai_frontend/short_video/apis/short_video_comment_api.dart';
 import 'package:lawyer_ai_frontend/short_video/short_video_page_index.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 import '../account/my_account_page.dart';
+import '../common/constant/constants.dart';
 import '../common/data_model/data_models.dart';
 
 class ShortVideoCommentPage extends StatelessWidget {
+  AccountDataModel loggedAccount;
   VideoDataModel video;
-  ShortVideoCommentPage({super.key, required this.video});
+  ShortVideoCommentPage({super.key, required this.video, required this.loggedAccount});
 
   @override
   Widget build(BuildContext context) {
@@ -14,14 +20,15 @@ class ShortVideoCommentPage extends StatelessWidget {
       appBar: AppBar(
         title: Text("评论"),
       ),
-      body: ShortVideoCommentList(video: video,),
+      body: ShortVideoCommentList(video: video, loggedAccount: loggedAccount,),
     );
   }
 }
 
 class ShortVideoCommentList extends StatefulWidget {
   VideoDataModel video;
-  ShortVideoCommentList({super.key, required this.video});
+  AccountDataModel loggedAccount;
+  ShortVideoCommentList({super.key, required this.video, required this.loggedAccount});
 
   @override
   State<ShortVideoCommentList> createState() => _ShortVideoCommentListState();
@@ -30,38 +37,29 @@ class ShortVideoCommentList extends StatefulWidget {
 class _ShortVideoCommentListState extends State<ShortVideoCommentList> {
   List<CommentDataModel> commentList = [];
   ScrollController controller = ScrollController();
+  int pageIndex = 1;
 
   @override
   void initState() {
     super.initState();
-    getCommentList();
+    fetchComment(commentId: widget.video.commentId, add: (elem) {
+      setState(() {
+        commentList.add(elem);
+      });
+    });
     controller.addListener(() {
-
-    });
-  }
-
-  void getCommentList() {
-    // TODO: Get comment list
-    setState(() {
-      commentList.clear();
-      for (int i = 0; i < 20; ++i) {
-        commentList.add(CommentDataModel(AccountDataModel("张翼德", "", "https://i2.hdslb.com/bfs/face/e1b90070c6a3ec7e5ee0248b8124b39488e741ee.jpg", ""), widget.video.videoTitle));
-      }
-      print("[ShortVideoCommentPage] comment loaded: ${commentList.length}");
-    });
-  }
-  void loadMoreComment() {
-    // TODO: Get comment list
-    setState(() {
-      for (int i = 0; i < 20; ++i) {
-        commentList.add(CommentDataModel(AccountDataModel("张翼德", "", "https://i2.hdslb.com/bfs/face/e1b90070c6a3ec7e5ee0248b8124b39488e741ee.jpg", ""), widget.video.videoTitle));
+      if (controller.position.pixels ==
+          controller.position.maxScrollExtent) {
+        print("[ShortVideoCommentList] Scrolled to end, loading data");
+        loadMoreComment(commentId: widget.video.commentId, add: (elem) {
+          setState(() {
+            commentList.add(elem);
+          });
+        }, pageNum: pageIndex + 1).then((value) {
+          if (value > 0) ++pageIndex;
+        });// 到底部加载新内容
       }
     });
-  }
-  void submitNewComment(String text) {
-    if (text != "") {
-      // TODO: Submit new comment
-    }
   }
 
   @override
@@ -72,7 +70,10 @@ class _ShortVideoCommentListState extends State<ShortVideoCommentList> {
       children: [
         Expanded(child: ListView(
           controller: controller,
-          children: List.generate(commentList.length, (index) => CommentBlock(comment: commentList[index])),
+          children: List.generate(commentList.length, (index) => Container(
+            padding: EdgeInsets.only(left: 24, right: 24, top: 12),
+            child: CommentBlock(comment: commentList[index]),
+          )),
         )),
         bottomSendMsgButton()
       ],
@@ -99,7 +100,27 @@ class _ShortVideoCommentListState extends State<ShortVideoCommentList> {
           Container(
             margin: const EdgeInsets.only(left: 24),
             child: ElevatedButton(onPressed: (){
-              submitNewComment(controller.text);
+              if (widget.loggedAccount.cookie == "") {
+                ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text("请先登录"), duration: Duration(milliseconds: 1000),)
+                );
+              } else {
+                if (controller.text == "") return;
+                submitComment(
+                    comment: controller.text,
+                    commentId: widget.video.commentId,
+                    cookie: widget.loggedAccount.cookie
+                );
+                controller.clear();
+                setState(() {
+                  commentList.clear();
+                });
+                fetchComment(commentId: widget.video.commentId, add: (elem) {
+                  setState(() {
+                    commentList.add(elem);
+                  });
+                });
+              }
             }, child: const Icon(Icons.send)),
           )
         ],
@@ -115,43 +136,38 @@ class CommentBlock extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-      children: [
-        authorInfo(),
-        Row(
-          mainAxisSize: MainAxisSize.max,
-          children: [
-            Flexible(
-              child: Container(
-                margin: EdgeInsets.only(left: 24, right: 24, bottom: 12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SelectableText(
-                      comment.content,
-                      // softWrap: true,
-                      style: TextStyle(
-                          height: 1.5,
-                          fontSize: 15
-                      ),
-                    ),
-                    Divider()
-                  ],
-                ),
-              ),
-            ),
-          ],
-        )
-      ],
+      children: [Row(
+        mainAxisSize: MainAxisSize.max,
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(padding: EdgeInsets.only(right: 18, top: 12, bottom: 24), child: accountAvatar(comment.author),),
+          Expanded(child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(comment.author.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 16),),
+              ExpandableText(text: comment.content, style: TextStyle(fontSize: 16), maxLines: 3, expand: false,),
+              Padding(padding: EdgeInsets.only(top: 4, bottom: 4), child: Text(TimeUtils.formatDateTime(comment.timestamp.toInt()), style: TextStyle(fontSize: 14),),)
+            ],
+          ))
+        ],
+      )],
     );
   }
-  Widget authorInfo() {
-    return Padding(padding: EdgeInsets.only(left: 24, bottom: 6), child: Row(
-      mainAxisSize: MainAxisSize.max,
-      children: [
-        Icon(Icons.account_circle),
-        Padding(padding: EdgeInsets.only(left: 4), child: Text(comment.author.name),)
-      ],
-    ),);
+
+  Widget accountAvatar(AccountDataModel acc) {
+    return CachedNetworkImage(
+      imageBuilder: (context, image) => Container(
+        decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(24),
+            image: DecorationImage(image: image, fit: BoxFit.cover)),
+      ),
+      imageUrl: serverAddress +
+          API.userAvatar.api +
+          acc.avatar,
+      width: 48,
+      height: 48,
+    );
   }
 }
 

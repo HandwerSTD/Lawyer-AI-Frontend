@@ -2,10 +2,12 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:lawyer_ai_frontend/account/my_account_page.dart';
 import 'package:lawyer_ai_frontend/common/data_model/data_models.dart';
+import 'package:lawyer_ai_frontend/settings/settings_page.dart';
 import 'package:lawyer_ai_frontend/short_video/short_video_page_index.dart';
 import 'package:provider/provider.dart';
 
 import 'ai_chat/ai_chat_page.dart';
+import 'common/theme/theme.dart';
 
 void main() {
   runApp(MaterialApp(
@@ -19,6 +21,11 @@ void main() {
         create: (context) => StorageDataModel(),
         child: MyApp(),
       ),
+      routes: { //注册路由
+        // //search 表示注册名  SearchPage表示跳转页面
+        // '/search':(context) => SearchPage(),
+        // '/textWork':(context)=>TextWordPage()
+      }
     )
   );
 }
@@ -44,28 +51,14 @@ class _MyAppState extends State<MyApp> {
             if (kDebugMode) {
               print("[Main Page] Navigating to ShortVideoWaterfall");
             }
-            Navigator.push(context, MaterialPageRoute(builder: (context) => const ShortVideoPageIndex()));
+            Navigator.push(context, MaterialPageRoute(builder: (context) => ShortVideoPageIndex(loggedAccount: loggedAccount,), settings: RouteSettings(name: '/home')));
           }),
           appBarIconButton(icon: const Icon(Icons.account_circle), text: const Text("我的"), onPressed: () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => AccountPage(loggedAccount: loggedAccount,)));
+            Navigator.push(context, MaterialPageRoute(builder: (context) => MyAccount(loggedAccount: loggedAccount), settings: RouteSettings(name: '/home')));
           }),
         ],
       ),
-      body: const AIChatPage(),
-    );
-  }
-
-  Widget appBarIconButton({required Icon icon, required Text text, required Function onPressed}) {
-    return ElevatedButton(
-        onPressed: () { onPressed(); },
-        style: const ButtonStyle(
-          backgroundColor: MaterialStatePropertyAll<Color>(Colors.transparent),
-          surfaceTintColor: MaterialStatePropertyAll<Color>(Colors.transparent),
-          shadowColor: MaterialStatePropertyAll<Color>(Colors.transparent),
-        ),
-        child: Row(
-          children: [icon, Container(padding: const EdgeInsets.only(left: 5), child: text)],
-        )
+      body: AIChatPage(loggedAccount: loggedAccount,),
     );
   }
 }

@@ -143,7 +143,8 @@ class _AccountRegisterState extends State<AccountRegister> {
       print(value.body);
       var result = jsonDecode(Utf8Decoder().convert(value.bodyBytes));
       if (result["status"] != "success") throw HttpException(result["message"]);
-      setLogin();
+      // setLogin();
+
       Navigator.pop(context);
     }).catchError((error) {
       print(error);
@@ -170,8 +171,8 @@ class _AccountRegisterState extends State<AccountRegister> {
         ).then((value) {
           var result = jsonDecode(Utf8Decoder().convert(value.bodyBytes));
           print("[AccountLogin] User info fetched: $result");
-          widget.loggedAccount.avatar = result["avatar"];
-          widget.loggedAccount.uid = result["uid"];
+          widget.loggedAccount.avatar = result["result"]["avatar"];
+          widget.loggedAccount.uid = result["result"]["uid"];
         });
       } else throw HttpException("failed");
     }).catchError((error) {

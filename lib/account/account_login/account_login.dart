@@ -137,9 +137,9 @@ class _AccountLoginState extends State<AccountLogin> {
           print("[AccountLogin] User info fetched: $result");
           widget.loggedAccount.avatar = result["result"]["avatar"];
           widget.loggedAccount.uid = result["result"]["uid"];
+          Navigator.pop(context);
         }).catchError((error) => throw HttpException(error));
       } else throw HttpException("failed");
-      Navigator.pop(context);
     }).catchError((error) {
       print(error);
     });

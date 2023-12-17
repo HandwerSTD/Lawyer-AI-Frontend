@@ -2,50 +2,37 @@ import 'package:flutter/material.dart';
 import 'package:lawyer_ai_frontend/common/theme/theme.dart';
 
 import '../common/data_model/data_models.dart';
+import 'chat_api.dart';import 'dart:convert';
+import 'dart:isolate';
+
+import 'package:lawyer_ai_frontend/common/constant/constants.dart';
+
+import '../common/data_model/data_models.dart';
+import 'package:http/http.dart' as http;
 
 bool instanceFirstOpen = false;
 
 class AIChatPage extends StatefulWidget {
-  const AIChatPage({super.key});
+  AccountDataModel loggedAccount;
+  AIChatPage({super.key, required this.loggedAccount});
 
   @override
   State<AIChatPage> createState() => _AIChatPageState();
 }
 class _AIChatPageState extends State<AIChatPage> {
   List<ChatMsgData> sttChatMsgList = [];
+  bool sttTextFieldEnabled = true;
 
-  Future<String> getFromAPI() async {
-    var result = await Future.delayed(const Duration(seconds: 2), () {
-      return "|get api test";
+  @override
+  void initState() {
+    super.initState();
+    setState(() {
+      sttChatMsgList.add(ChatMsgData("您好，我是您的专属 AI 律师顾问！我可以提供各种信息，或者回答一些法律问题。有什么问题想问的？", false));
     });
-    return result;
-  }
-
-  void submitNewMessage(String text) {
-    if (text != "") {
-      setState(() {
-        sttChatMsgList.add(ChatMsgData(text, true));
-      });
-      var networkResult = "";
-      getFromAPI().then((value) {
-        networkResult = value;
-        setState(() {
-          sttChatMsgList.add(ChatMsgData("你说的对，但是$text$networkResult", false));
-        });
-      }).catchError((err) {
-        networkResult = "Error: Network failed";
-      });
-    }
   }
 
   @override
   Widget build(BuildContext context) {
-    if (!instanceFirstOpen) {
-      setState(() {
-        sttChatMsgList.add(ChatMsgData("您好，我是您的专属 AI 律师顾问！我可以提供各种信息，或者回答一些法律问题。有什么问题想问的？", false));
-      });
-      instanceFirstOpen = true;
-    }
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -73,12 +60,36 @@ class _AIChatPageState extends State<AIChatPage> {
               decoration: const InputDecoration(
                 hintText: "向 AI 律师问点什么吧",
               ),
+              readOnly: !sttTextFieldEnabled,
             ),
           ),
           Container(
             margin: const EdgeInsets.only(left: 24),
             child: ElevatedButton(onPressed: (){
-              submitNewMessage(controller.text);
+              if (widget.loggedAccount.cookie == "") {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text("请先登录"), duration: Duration(milliseconds: 1000),)
+                );
+                return;
+              }
+              setState(() {
+                sttTextFieldEnabled = false;
+              });
+              submitNewMessage(controller.text, widget.loggedAccount.cookie, (val) {
+                setState(() {
+                  sttChatMsgList.add(val);
+                });
+              }, (apd) async {
+                setState(() {
+                  for (int i = 0; i < apd.length; ++i) {
+                    sttChatMsgList.last.append(apd[i]);
+                  }
+                });
+              }, () {
+                setState(() {
+                  sttTextFieldEnabled = true;
+                });
+              });
             }, child: const Icon(Icons.send)),
           )
         ],
@@ -97,7 +108,7 @@ class _AIChatPageState extends State<AIChatPage> {
       children: [
         Flexible(
           child: Container(
-            margin: EdgeInsets.only(left: leftMargin, right: rightMargin, top: 24),
+            margin: EdgeInsets.only(left: leftMargin, right: rightMargin, top: 12, bottom: 12),
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
                 color: background,
