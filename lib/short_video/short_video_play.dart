@@ -69,7 +69,9 @@ class _ShortVideoPlayState extends State<ShortVideoPlay> {
               setState(() {
                 videos.add(vid);
               });
-            }, () {
+            },() {
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("网络错误")));
+            } , () {
               setState(() {
                 print("[ShortVideoPlay] Loading more data");
                 for (int ind = videos.length - 1; ind < videos.length; ++ind) {
@@ -122,7 +124,6 @@ class _VideoPlayBlockState extends State<VideoPlayBlock> {
               showOptions: false,
               autoPlay: true,
               looping: true,
-
               aspectRatio: videoPlayerController.value.aspectRatio);
           loaded = true;
         });
@@ -132,7 +133,7 @@ class _VideoPlayBlockState extends State<VideoPlayBlock> {
   @override
   void dispose() {
     videoPlayerController.dispose();
-    videoController.dispose();
+    if (loaded) videoController.dispose();
     super.dispose();
   }
 

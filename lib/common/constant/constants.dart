@@ -1,4 +1,6 @@
-const serverAddress = "http://10.17.174.143:5000";
+var serverAddress = "http://10.17.245.148:5000";
+
+const privacyStatementAddress = "https://www.baidu.com/";
 
 // class ServerAPI {
 //   String api = "";
@@ -15,6 +17,7 @@ enum API {
   videoCover("/api/cover/"),
   videoLikeIt("/api/video/like"),
   videoIsLiked("/api/video/is_like"),
+  videoRecommended("/api/video/random"),
 
   commentSubmit("/api/comment/commit_comment"),
   commentList("/api/comment/list_comment"),

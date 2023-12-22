@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:lawyer_ai_frontend/common/constant/constants.dart';
 import 'package:lawyer_ai_frontend/short_video/apis/short_video_api.dart';
 import 'package:lawyer_ai_frontend/short_video/short_video_page_index.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:lawyer_ai_frontend/short_video/short_video_play.dart';
+import 'package:typicons_flutter/typicons_flutter.dart';
 import 'package:waterfall_flow/waterfall_flow.dart';
 
 import '../common/data_model/data_models.dart';
@@ -10,8 +12,10 @@ import '../common/data_model/data_models.dart';
 class ShortVideoWaterfallList extends StatefulWidget {
   List<VideoDataModel> videoList;
   AccountDataModel loggedAccount;
+  String providedAuthorAvatar = "";
+  Function loadMore;
   ShortVideoWaterfallList(
-      {super.key, required this.videoList, required this.loggedAccount});
+      {super.key, required this.videoList, required this.loggedAccount, required this.providedAuthorAvatar, required this.loadMore});
 
   @override
   State<ShortVideoWaterfallList> createState() =>
@@ -28,23 +32,25 @@ class _ShortVideoWaterfallListState extends State<ShortVideoWaterfallList> {
     super.initState();
     sttVideoList = widget.videoList;
 
-    wfController.addListener(() async {
+    wfController.addListener(() {
       if (wfController.position.pixels ==
           wfController.position.maxScrollExtent) {
         print("[ShortVideoList] Scrolled to end, loading data");
-        loadMoreContent((vid) {
+        widget.loadMore((vid) {
           setState(() {
             sttVideoList.add(vid);
           });
-        }, () {}); // 到底部加载新内容
+        }, () {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("网络错误")));
+        } , () {}); // 到底部加载新内容
       }
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 5, right: 5),
+    return Container(
+      // padding: const EdgeInsets.only(left: 5, right: 5),
       child: WaterfallFlow.count(
         crossAxisCount: 2,
         controller: wfController,
@@ -59,7 +65,6 @@ class _ShortVideoWaterfallListState extends State<ShortVideoWaterfallList> {
       children: [
         GestureDetector(
           onTap: () {
-            /* TODO: Navigate to Video */
             Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -69,34 +74,62 @@ class _ShortVideoWaterfallListState extends State<ShortVideoWaterfallList> {
                           loggedAccount: widget.loggedAccount,
                         )));
           },
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(
-                    left: 5, right: 5, top: 12, bottom: 12),
-                child: CachedNetworkImage(
-                  imageUrl: video.videoImageLink,
-                  placeholder: (context, url) => const Center(
-                      child: SizedBox(
-                    height: 300,
-                    child: Center(
-                      child: CircularProgressIndicator(),
+          child: Padding(
+            padding: EdgeInsets.only(left: 6, right: 4, top: 4, bottom: 12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(
+                      left: 5, right: 5, top: 5, bottom: 12),
+                  child: CachedNetworkImage(
+                    imageUrl: video.videoImageLink,
+                    placeholder: (context, url) => const Center(
+                        child: SizedBox(
+                          height: 300,
+                          child: Center(
+                            child: CircularProgressIndicator(),
+                          ),
+                        )),
+                    errorWidget: (context, url, error) => const Icon(Icons.error),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(left: 10, right: 10, bottom: 6),
+                  child: Text(
+                    video.videoTitle,
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 2,
+                    style: const TextStyle(fontSize: 14, letterSpacing: 0.1),
+                  ),
+                ),
+                Padding(padding: EdgeInsets.only(left: 10, right: 10), child: Row(
+                  mainAxisSize: MainAxisSize.max,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        CachedNetworkImage(imageUrl: serverAddress + API.userAvatar.api + video.authorIcon, height: 22, width: 22,imageBuilder: (context, image) => Container(
+                          decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(12),
+                              image: DecorationImage(image: image, fit: BoxFit.cover)),
+                        )),
+                        Padding(padding: EdgeInsets.only(left: 6), child: Text(video.author, maxLines: 1, overflow: TextOverflow.ellipsis,),)
+                      ],
                     ),
-                  )),
-                  errorWidget: (context, url, error) => const Icon(Icons.error),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(left: 18, right: 8, bottom: 6),
-                child: Text(
-                  video.videoTitle,
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 2,
-                  style: const TextStyle(fontSize: 14, letterSpacing: 0.1),
-                ),
-              )
-            ],
+                    Row(
+                      // crossAxisAlignment: en,
+                      children: [
+                        Icon(TypIconData(0xE087), color: Color(0xbb000000),),
+                        Text(" ${video.gotLikes.toString()}")
+                      ],
+                    )
+                  ],
+                ),),
+                // Divider()
+              ],
+            ),
           ),
         )
       ],

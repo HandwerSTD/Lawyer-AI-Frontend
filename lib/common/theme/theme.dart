@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+
+final themeAccent = Color(0xffded9fa);
 final BoxShadow fabBoxShadow = BoxShadow(
     color: Colors.black,
     offset: Offset.fromDirection(1, 1),
@@ -151,4 +153,48 @@ class _ExpandableTextState extends State<ExpandableText> {
       }
     });
   }
+}
+
+
+class NetworkErrorPlaceholder extends StatelessWidget {
+  const NetworkErrorPlaceholder({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const SizedBox(
+      width: 500,
+      height: 500,
+      child: Column(
+        children: [
+          Icon(Icons.wifi_off),
+          Text("网络错误")
+        ],
+      ),
+    );
+  }
+}
+
+InputDecoration outlineBorderedInputDecoration(String hint, double rad) => InputDecoration(
+  contentPadding: EdgeInsets.only(left: 14, right: 14, top: 14, bottom: 14),
+  border: OutlineInputBorder(
+    // borderSide: BorderSide(width: 1, color: Colors.lightBlue),
+    borderRadius: BorderRadius.all(Radius.circular(rad))
+  ),
+  // filled: true,
+  // fillColor: Colors.grey[200],
+  hintText: hint,
+  hintStyle: TextStyle(color: Colors.grey),
+);
+
+void showSnackBar(BuildContext context, String text) {
+  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
+}
+
+Widget appIconImage({margin = const EdgeInsets.only(bottom: 12, top: 48)}) {
+  return Container(
+    width: 96,
+    height: 96,
+    margin: margin,
+    child: Image.asset("assets/rounded_app_icon.png",),
+  );
 }

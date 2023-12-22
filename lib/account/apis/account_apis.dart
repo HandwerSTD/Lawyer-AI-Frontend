@@ -18,3 +18,7 @@ Future<AccountDataModel> getUserInfoById(String uid) {
     return AccountDataModel(result["result"]["user"], result["result"]["uid"], result["result"]["avatar"], "");
   });
 }
+
+// Future uploadNewAvatar() {
+//
+// }

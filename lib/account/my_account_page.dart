@@ -46,17 +46,21 @@ class _MyAccountState extends State<MyAccount> {
   void initState() {
     super.initState();
     // TODO: Fetch User's Video
-    getVideoList((vid) {
-      setState(() {
-        videoList.add(vid);
-      });
-    });
+    if (widget.loggedAccount.cookie != "") {
+      loadVideoByUser(
+        uid: widget.loggedAccount.uid,
+        add: (vid) {
+          setState(() {
+            videoList.add(vid);
+          });
+        },
+        pageNum: 1,
+      );
+    }
   }
-  
+
   void refreshState() {
-    setState(() {
-      
-    });
+    setState(() {});
   }
 
   @override
@@ -65,9 +69,18 @@ class _MyAccountState extends State<MyAccount> {
       appBar: AppBar(
         title: Text("我的"),
         actions: [
-          appBarIconButton(onPressed: () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => SettingsPage(loggedAccount: widget.loggedAccount))).then((value) => refreshState());
-          }, icon: Icon(Icons.settings), text: Text("设置"), color: Colors.black)
+          appBarIconButton(
+              onPressed: () {
+                Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => SettingsPage(
+                                loggedAccount: widget.loggedAccount)))
+                    .then((value) => refreshState());
+              },
+              icon: Icon(Icons.settings),
+              text: Text("设置"),
+              color: Colors.black)
         ],
       ),
       body: Column(
@@ -79,10 +92,26 @@ class _MyAccountState extends State<MyAccount> {
             mainAxisSize: MainAxisSize.max,
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              Padding(padding: EdgeInsets.only(left: 36, top: 12, bottom: 12), child: Text("我的视频", style: TextStyle(fontSize: 18, ),),),],
+              Padding(
+                padding: EdgeInsets.only(left: 36, top: 12, bottom: 12),
+                child: Text(
+                  "我的视频",
+                  style: TextStyle(
+                    fontSize: 18,
+                  ),
+                ),
+              ),
+            ],
           ),
-          (widget.loggedAccount.cookie == "" || videoList.isEmpty ? const Text("请先登录") :
-          Expanded(child: ShortVideoWaterfallList(videoList: videoList, loggedAccount: widget.loggedAccount,)))
+          (widget.loggedAccount.cookie == ""
+              ? const Text("请先登录")
+              : (videoList.isEmpty
+                  ? const Text("空空如也")
+                  : Expanded(
+                      child: ShortVideoWaterfallList(
+                      videoList: videoList,
+                      loggedAccount: widget.loggedAccount, providedAuthorAvatar: widget.loggedAccount.avatar, loadMore: loadMoreContent,
+                    ))))
         ],
       ),
     );
@@ -91,11 +120,16 @@ class _MyAccountState extends State<MyAccount> {
   Widget myAccountBlock() {
     return GestureDetector(
       onTap: () {
-          Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => (widget.loggedAccount.cookie == "" ? AccountLogin(isFirstLogin: false, loggedAccount: widget.loggedAccount) : AccountDetails(loggedAccount: widget.loggedAccount,))
-                      )).then((value) => refreshState());
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => (widget.loggedAccount.cookie == ""
+                    ? AccountLogin(
+                        isFirstLogin: false,
+                        loggedAccount: widget.loggedAccount)
+                    : AccountDetails(
+                        loggedAccount: widget.loggedAccount,
+                      )))).then((value) => refreshState());
         setState(() {});
       },
       child: Container(
@@ -132,7 +166,7 @@ class _MyAccountState extends State<MyAccount> {
         : CachedNetworkImage(
             imageBuilder: (context, image) => Container(
               decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(6),
+                  borderRadius: BorderRadius.circular(12),
                   image: DecorationImage(image: image, fit: BoxFit.cover)),
             ),
             imageUrl: serverAddress +

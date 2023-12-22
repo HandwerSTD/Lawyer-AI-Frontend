@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:lawyer_ai_frontend/common/theme/theme.dart';
 
 import '../common/data_model/data_models.dart';
-import 'chat_api.dart';import 'dart:convert';
+import 'chat_api.dart';
+import 'dart:convert';
 import 'dart:isolate';
 
 import 'package:lawyer_ai_frontend/common/constant/constants.dart';
@@ -19,29 +20,37 @@ class AIChatPage extends StatefulWidget {
   @override
   State<AIChatPage> createState() => _AIChatPageState();
 }
+
 class _AIChatPageState extends State<AIChatPage> {
   List<ChatMsgData> sttChatMsgList = [];
   bool sttTextFieldEnabled = true;
+  ScrollController scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
     setState(() {
-      sttChatMsgList.add(ChatMsgData("您好，我是您的专属 AI 律师顾问！我可以提供各种信息，或者回答一些法律问题。有什么问题想问的？", false));
+      sttChatMsgList.add(ChatMsgData(
+          "您好，我是您的专属 AI 律师顾问紫小藤！我可以提供各种信息，或者回答一些法律问题。有什么问题想问的？", false));
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Expanded(child: ListView(
-          shrinkWrap: true,
-          children: sttChatMsgList.map((e) => chatMessageBlock(e)).toList(),
-        )),
-        bottomSendMsgButton()
-      ],
+    return Container(
+      // TODO: Border & Background as Design
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Expanded(
+              child: ListView(
+                shrinkWrap: true,
+                controller: scrollController,
+                children: sttChatMsgList.map((e) => chatMessageBlock(e)).toList(),
+              )),
+          bottomSendMsgButton()
+        ],
+      ),
     );
   }
 
@@ -56,41 +65,72 @@ class _AIChatPageState extends State<AIChatPage> {
         children: [
           Expanded(
             child: TextField(
+              autofocus: false,
               controller: controller,
               decoration: const InputDecoration(
-                hintText: "向 AI 律师问点什么吧",
+                hintText: "向紫小藤问点什么吧",
               ),
               readOnly: !sttTextFieldEnabled,
             ),
           ),
+          IconButton(
+              onPressed: () {
+                // TODO: Voice Recognize
+              },
+              icon: Container(
+                padding: const EdgeInsets.all(3),
+                decoration: BoxDecoration(
+                    color: Color(0xfff1f2fb),
+                    border: Border.all(color: Color(0x99005ac2), width: 1.5),
+                    borderRadius: BorderRadius.circular(16)),
+                child: const Icon(Icons.keyboard_voice_rounded,
+                    color: Color(0xff005ac2)),
+              )),
           Container(
-            margin: const EdgeInsets.only(left: 24),
-            child: ElevatedButton(onPressed: (){
-              if (widget.loggedAccount.cookie == "") {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text("请先登录"), duration: Duration(milliseconds: 1000),)
-                );
-                return;
-              }
-              setState(() {
-                sttTextFieldEnabled = false;
-              });
-              submitNewMessage(controller.text, widget.loggedAccount.cookie, (val) {
+            margin: const EdgeInsets.only(left: 5),
+            child: ElevatedButton(
+              onPressed: () {
+                if (widget.loggedAccount.cookie == "") {
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                    content: Text("请先登录"),
+                    duration: Duration(milliseconds: 1000),
+                  ));
+                  return;
+                }
                 setState(() {
-                  sttChatMsgList.add(val);
+                  sttTextFieldEnabled = false;
+                  scrollController.animateTo(
+                      scrollController.position.maxScrollExtent,
+                      duration: Duration(milliseconds: 500),
+                      curve: Curves.ease);
                 });
-              }, (apd) async {
-                setState(() {
-                  for (int i = 0; i < apd.length; ++i) {
-                    sttChatMsgList.last.append(apd[i]);
-                  }
+                submitNewMessage(controller.text, widget.loggedAccount.cookie,
+                    (val) {
+                  setState(() {
+                    sttChatMsgList.add(val);
+                  });
+                }, (apd) async {
+                  setState(() {
+                    sttChatMsgList.last.append(apd);
+                  });
+                }, () {
+                  setState(() {
+                    sttTextFieldEnabled = true;
+                    scrollController.animateTo(
+                        scrollController.position.maxScrollExtent,
+                        duration: Duration(milliseconds: 500),
+                        curve: Curves.ease);
+                  });
+                }, () {
+                  ScaffoldMessenger.of(context)
+                      .showSnackBar(SnackBar(content: Text("网络错误")));
                 });
-              }, () {
-                setState(() {
-                  sttTextFieldEnabled = true;
-                });
-              });
-            }, child: const Icon(Icons.send)),
+              },
+              style: const ButtonStyle(
+                  side: MaterialStatePropertyAll(
+                      BorderSide(color: Color(0x99005ac2), width: 1.5))),
+              child: const Icon(Icons.send),
+            ),
           )
         ],
       ),
@@ -99,47 +139,59 @@ class _AIChatPageState extends State<AIChatPage> {
 
   Widget chatMessageBlock(ChatMsgData msgData) {
     Color foreground = (msgData.isMine ? Colors.white : Colors.black87);
-    Color background = (msgData.isMine ? Colors.blueAccent : const Color(0xFFF0F0F0));
+    Color background =
+        (msgData.isMine ? Colors.blueAccent : const Color(0xFFF0F0F0));
     double leftMargin = 24 + (msgData.isMine ? 24 : 0);
     double rightMargin = 24;
     return Row(
       mainAxisSize: MainAxisSize.max,
-      mainAxisAlignment: (msgData.isMine ? MainAxisAlignment.end : MainAxisAlignment.start),
+      mainAxisAlignment:
+          (msgData.isMine ? MainAxisAlignment.end : MainAxisAlignment.start),
       children: [
         Flexible(
           child: Container(
-            margin: EdgeInsets.only(left: leftMargin, right: rightMargin, top: 12, bottom: 12),
+            margin: EdgeInsets.only(
+                left: leftMargin, right: rightMargin, top: 12, bottom: 12),
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
                 color: background,
                 boxShadow: [textBlockBoxShadow],
-                borderRadius: BorderRadius.only(topLeft: const Radius.circular(20), topRight: const Radius.circular(20), bottomLeft: (msgData.isMine ? const Radius.circular(20) : const Radius.circular(8)), bottomRight: (!msgData.isMine ? const Radius.circular(20) : const Radius.circular(8)))
-            ),
+                borderRadius: BorderRadius.only(
+                    topLeft: const Radius.circular(20),
+                    topRight: const Radius.circular(20),
+                    bottomLeft: (msgData.isMine
+                        ? const Radius.circular(20)
+                        : const Radius.circular(8)),
+                    bottomRight: (!msgData.isMine
+                        ? const Radius.circular(20)
+                        : const Radius.circular(8)))),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 SelectableText(
                   msgData.message,
                   // softWrap: true,
-                  style: TextStyle(
-                      color: foreground,
-                      height: 1.5,
-                      fontSize: 15
-                  ),
+                  style:
+                      TextStyle(color: foreground, height: 1.5, fontSize: 15),
                 ),
-                if (!msgData.isMine) {
-                  const Padding(padding: EdgeInsets.only(top: 4), child: Text("对话由 AI 大模型生成，仅供参考", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black54),),)
-                }.first
+                if (!msgData.isMine)
+                  {
+                    const Padding(
+                      padding: EdgeInsets.only(top: 4),
+                      child: Text(
+                        "对话由 AI 大模型生成，仅供参考",
+                        style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black54),
+                      ),
+                    )
+                  }.first
               ],
             ),
           ),
         )
       ],
-
     );
   }
 }
-
-
-
-

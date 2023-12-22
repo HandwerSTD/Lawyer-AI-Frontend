@@ -16,6 +16,7 @@ class VideoDataModel {
   String id = "";
   String author = "";
   String authorUid = "";
+  String authorIcon = "";
   String commentId = "";
   String videoSha1 = "";
   String videoImageLink = "";
@@ -33,6 +34,7 @@ class VideoDataModel {
       required this.authorUid,
       required this.id,
       required this.author,
+      required this.authorIcon,
       required this.commentId});
 }
 

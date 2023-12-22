@@ -38,6 +38,7 @@ class _ShortVideoCommentListState extends State<ShortVideoCommentList> {
   List<CommentDataModel> commentList = [];
   ScrollController controller = ScrollController();
   int pageIndex = 1;
+  /* TODO: Loading flag*/
 
   @override
   void initState() {
@@ -47,6 +48,7 @@ class _ShortVideoCommentListState extends State<ShortVideoCommentList> {
         commentList.add(elem);
       });
     });
+
     controller.addListener(() {
       if (controller.position.pixels ==
           controller.position.maxScrollExtent) {
@@ -65,16 +67,17 @@ class _ShortVideoCommentListState extends State<ShortVideoCommentList> {
   @override
   Widget build(BuildContext context) {
     return Column(
+      // TODO: Border & Background as Design
       mainAxisSize: MainAxisSize.max,
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Expanded(child: ListView(
+        Expanded(child: (commentList.length == 0 ? Text("空空如也"): ListView(
           controller: controller,
           children: List.generate(commentList.length, (index) => Container(
             padding: EdgeInsets.only(left: 24, right: 24, top: 12),
             child: CommentBlock(comment: commentList[index]),
           )),
-        )),
+        ))),
         bottomSendMsgButton()
       ],
     );
@@ -110,16 +113,26 @@ class _ShortVideoCommentListState extends State<ShortVideoCommentList> {
                     comment: controller.text,
                     commentId: widget.video.commentId,
                     cookie: widget.loggedAccount.cookie
-                );
-                controller.clear();
-                setState(() {
-                  commentList.clear();
-                });
-                fetchComment(commentId: widget.video.commentId, add: (elem) {
+                ).then((val) {
                   setState(() {
-                    commentList.add(elem);
+                    commentList.clear();
+                  });
+                  fetchComment(commentId: widget.video.commentId, add: (elem) {
+                    setState(() {
+                      commentList.add(elem);
+                    });
                   });
                 });
+
+                // controller.clear();
+                // setState(() {
+                //   commentList.clear();
+                // });
+                // fetchComment(commentId: widget.video.commentId, add: (elem) {
+                //   setState(() {
+                //     commentList.add(elem);
+                //   });
+                // });
               }
             }, child: const Icon(Icons.send)),
           )

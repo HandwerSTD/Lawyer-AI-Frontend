@@ -29,6 +29,7 @@ class _AccountRegisterState extends State<AccountRegister> {
         appBar: (AppBar()),
         body: Center(
           child: Column(
+            // TODO: Border & Background as Design
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
@@ -43,7 +44,14 @@ class _AccountRegisterState extends State<AccountRegister> {
                 padding: const EdgeInsets.all(12),
                 child: ElevatedButton(
                   onPressed: () {
-                    setRegister();
+                    setRegister(
+                      onNetworkErr: () {
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("网络错误")));
+                      },
+                      onRegErr: () {
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("注册失败")));
+                      }
+                    );
                   },
                   style: const ButtonStyle(
                       fixedSize: MaterialStatePropertyAll(Size.fromWidth(280))),
@@ -111,7 +119,7 @@ class _AccountRegisterState extends State<AccountRegister> {
           child: Text("《用户协议》", style: TextStyle(color: Colors.blueAccent),),
           onTap: () {
             // TODO: 用户协议
-            launchUrl(Uri.parse("https://www.baidu.com/"), mode: LaunchMode.externalApplication);
+            launchUrl(Uri.parse(privacyStatementAddress), mode: LaunchMode.externalApplication);
           },
         )
       ],
@@ -125,58 +133,80 @@ class _AccountRegisterState extends State<AccountRegister> {
           mainAxisSize: MainAxisSize.max,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            IconButton(onPressed: () {}, icon: Icon(Icons.shop_two)),
+            IconButton(onPressed: () {setThirdPartyLogin();}, icon: Icon(Icons.shop_two)),
             IconButton(
-                onPressed: () {}, icon: Icon(Icons.accessible_forward_outlined))
+                onPressed: () {setThirdPartyLogin();}, icon: Icon(Icons.accessible_forward_outlined))
           ],
         ));
   }
 
-  void setRegister() {
+  void setThirdPartyLogin() {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("暂未开放")));
+  }
+  bool checkPwd(String pwd) {
+    return true;
+  }
+  void setRegister({required Function onNetworkErr, required Function onRegErr}) {
     String user = controllerName.text, pwd = controllerPasswd.text, email = controllerEmail.text;
-    if (user == "" || pwd == "" || email == "" || !checkboxSelected) return;
+    if (user == "" || email == "") {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("用户名和邮箱不能为空")));
+      return;
+    }
+    if (!checkPwd(pwd)) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("密码不符合要求")));
+      return;
+    }
+    if (!checkboxSelected) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("请阅读并同意我们的《用户协议》")));
+      return;
+    }
     print("[AccountRegister] sending data");
     http.post(Uri.parse(serverAddress + API.userRegister.api),
         headers: jsonHeaders,
         body: jsonEncode({"user": user, "password": sha1.convert(utf8.encode(pwd)).toString()})
-    ).then((value) {
+    ).timeout(Duration(seconds: 5))
+    .then((value) {
       print(value.body);
       var result = jsonDecode(Utf8Decoder().convert(value.bodyBytes));
-      if (result["status"] != "success") throw HttpException(result["message"]);
+      if (result["status"] != "success") {
+        print(result["message"]);
+        onRegErr();
+        return;
+      }
       // setLogin();
-
       Navigator.pop(context);
     }).catchError((error) {
       print(error);
+      onNetworkErr();
     });
   }
-  void setLogin() {
-    String user = controllerName.text, pwd = controllerPasswd.text;
-
-    http.post(Uri.parse(serverAddress + API.userLogin.api),
-        headers: jsonHeaders,
-        body: jsonEncode({"user": user, "password": sha1.convert(utf8.encode(pwd)).toString()})
-    ).then((value) {
-      print(value.body);
-      var result = jsonDecode(Utf8Decoder().convert(value.bodyBytes));
-      if (result["status"] != "success") throw HttpException(result["message"]);
-      var cookie = value.headers["set-cookie"];
-      if (cookie != null) {
-        int index = cookie.indexOf(';');
-        widget.loggedAccount.cookie = (index == -1 ? cookie : cookie.substring(0, index));
-        widget.loggedAccount.name = user;
-        http.post(Uri.parse(serverAddress + API.userInfo.api),
-            headers: jsonHeaders,
-            body: jsonEncode({"user": user})
-        ).then((value) {
-          var result = jsonDecode(Utf8Decoder().convert(value.bodyBytes));
-          print("[AccountLogin] User info fetched: $result");
-          widget.loggedAccount.avatar = result["result"]["avatar"];
-          widget.loggedAccount.uid = result["result"]["uid"];
-        });
-      } else throw HttpException("failed");
-    }).catchError((error) {
-      print(error);
-    });
-  }
+  // void setLogin() {
+  //   String user = controllerName.text, pwd = controllerPasswd.text;
+  //
+  //   http.post(Uri.parse(serverAddress + API.userLogin.api),
+  //       headers: jsonHeaders,
+  //       body: jsonEncode({"user": user, "password": sha1.convert(utf8.encode(pwd)).toString()})
+  //   ).then((value) {
+  //     print(value.body);
+  //     var result = jsonDecode(Utf8Decoder().convert(value.bodyBytes));
+  //     if (result["status"] != "success") throw HttpException(result["message"]);
+  //     var cookie = value.headers["set-cookie"];
+  //     if (cookie != null) {
+  //       int index = cookie.indexOf(';');
+  //       widget.loggedAccount.cookie = (index == -1 ? cookie : cookie.substring(0, index));
+  //       widget.loggedAccount.name = user;
+  //       http.post(Uri.parse(serverAddress + API.userInfo.api),
+  //           headers: jsonHeaders,
+  //           body: jsonEncode({"user": user})
+  //       ).then((value) {
+  //         var result = jsonDecode(Utf8Decoder().convert(value.bodyBytes));
+  //         print("[AccountLogin] User info fetched: $result");
+  //         widget.loggedAccount.avatar = result["result"]["avatar"];
+  //         widget.loggedAccount.uid = result["result"]["uid"];
+  //       });
+  //     } else throw HttpException("failed");
+  //   }).catchError((error) {
+  //     print(error);
+  //   });
+  // }
 }
