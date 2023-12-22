@@ -9,6 +9,7 @@ import 'package:lawyer_ai_frontend/common/theme/theme.dart';
 import 'package:lawyer_ai_frontend/short_video/apis/short_video_api.dart';
 import 'package:lawyer_ai_frontend/short_video/short_video_list.dart';
 import 'package:http/http.dart' as http;
+import 'package:lawyer_ai_frontend/short_video/short_video_search.dart';
 import 'package:lawyer_ai_frontend/short_video/short_video_upload.dart';
 
 import '../common/data_model/data_models.dart';
@@ -23,7 +24,6 @@ class ShortVideoPageIndex extends StatefulWidget {
 
 class _ShortVideoPageIndexState extends State<ShortVideoPageIndex> {
   List<VideoDataModel> sttVideoList = [];
-  bool isSearching = false;
   bool isNetworkError = false;
   TextEditingController controller = TextEditingController();
 
@@ -56,9 +56,11 @@ class _ShortVideoPageIndexState extends State<ShortVideoPageIndex> {
         actions: [
           IconButton(
               onPressed: () {
-                setState(() {
-                  isSearching = !isSearching;
-                });
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => ShortVideoSearch(
+                            loggedAccount: widget.loggedAccount)));
               },
               icon: const Icon(Icons.search)),
           IconButton(
@@ -92,7 +94,19 @@ class _ShortVideoPageIndexState extends State<ShortVideoPageIndex> {
                       ? NetworkErrorPlaceholder()
                       : ShortVideoWaterfallList(
                           videoList: sttVideoList,
-                          loggedAccount: widget.loggedAccount, providedAuthorAvatar: '', loadMore: loadMoreContent,
+                          loggedAccount: widget.loggedAccount,
+                          providedAuthorAvatar: '',
+                          loadMore: () {
+                            videoRecommendLoadMoreContent((vid) {
+                              setState(() {
+                                sttVideoList.add(vid);
+                              });
+                            }, () {
+                              setState(() {
+                                isNetworkError = true;
+                              });
+                            }, (){});
+                          },
                         )),
                   Padding(
                     padding: EdgeInsets.all(24),
@@ -129,40 +143,6 @@ class _ShortVideoPageIndexState extends State<ShortVideoPageIndex> {
             )
           ],
         ),
-        AnimatedOpacity(
-          opacity: (isSearching ? 1 : 0),
-          duration: Duration(milliseconds: 100),
-          child: Visibility(
-              visible: isSearching,
-              child: Padding(
-                padding: EdgeInsets.only(left: 24, right: 24, bottom: 12),
-                child: SearchBar(
-                  controller: controller,
-                  elevation: MaterialStatePropertyAll(3),
-                  // shadowColor: MaterialStatePropertyAll(Colors.transparent),
-                  backgroundColor: MaterialStatePropertyAll(Color(0xfff1f3f5)),
-                  surfaceTintColor:
-                      MaterialStatePropertyAll(Colors.transparent),
-                  leading: const Padding(
-                    padding: EdgeInsets.only(left: 8),
-                    child: Icon(
-                      Icons.search,
-                      color: Colors.black,
-                    ),
-                  ),
-                  onSubmitted: (value) {
-                    setState(() {
-                      sttVideoList.clear();
-                    });
-                    getSearchVideoList(value, (vid) {
-                      setState(() {
-                        sttVideoList.add(vid);
-                      });
-                    });
-                  },
-                ),
-              )),
-        )
       ])),
     );
   }

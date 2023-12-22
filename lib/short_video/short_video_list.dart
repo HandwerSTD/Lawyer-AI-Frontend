@@ -15,7 +15,11 @@ class ShortVideoWaterfallList extends StatefulWidget {
   String providedAuthorAvatar = "";
   Function loadMore;
   ShortVideoWaterfallList(
-      {super.key, required this.videoList, required this.loggedAccount, required this.providedAuthorAvatar, required this.loadMore});
+      {super.key,
+      required this.videoList,
+      required this.loggedAccount,
+      required this.providedAuthorAvatar,
+      required this.loadMore});
 
   @override
   State<ShortVideoWaterfallList> createState() =>
@@ -36,13 +40,24 @@ class _ShortVideoWaterfallListState extends State<ShortVideoWaterfallList> {
       if (wfController.position.pixels ==
           wfController.position.maxScrollExtent) {
         print("[ShortVideoList] Scrolled to end, loading data");
-        widget.loadMore((vid) {
-          setState(() {
-            sttVideoList.add(vid);
-          });
-        }, () {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("网络错误")));
-        } , () {}); // 到底部加载新内容
+        // if (widget.searchInfo == "") {
+        //   widget.loadMore((vid) {
+        //     setState(() {
+        //       sttVideoList.add(vid);
+        //     });
+        //   }, () {
+        //     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("网络错误")));
+        //   } , () {}); // 到底部加载新内容
+        // } else {
+        //   widget.loadMore(widget.searchInfo, (vid) {
+        //     setState(() {
+        //       sttVideoList.add(vid);
+        //     });
+        //   }, () {
+        //     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("网络错误")));
+        //   } , () {}); // 到底部加载新内容
+        // }
+        widget.loadMore();
       }
     });
   }
@@ -86,16 +101,18 @@ class _ShortVideoWaterfallListState extends State<ShortVideoWaterfallList> {
                     imageUrl: video.videoImageLink,
                     placeholder: (context, url) => const Center(
                         child: SizedBox(
-                          height: 300,
-                          child: Center(
-                            child: CircularProgressIndicator(),
-                          ),
-                        )),
-                    errorWidget: (context, url, error) => const Icon(Icons.error),
+                      height: 300,
+                      child: Center(
+                        child: CircularProgressIndicator(),
+                      ),
+                    )),
+                    errorWidget: (context, url, error) =>
+                        const Icon(Icons.error),
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.only(left: 10, right: 10, bottom: 6),
+                  padding:
+                      const EdgeInsets.only(left: 10, right: 10, bottom: 6),
                   child: Text(
                     video.videoTitle,
                     overflow: TextOverflow.ellipsis,
@@ -103,30 +120,50 @@ class _ShortVideoWaterfallListState extends State<ShortVideoWaterfallList> {
                     style: const TextStyle(fontSize: 14, letterSpacing: 0.1),
                   ),
                 ),
-                Padding(padding: EdgeInsets.only(left: 10, right: 10), child: Row(
-                  mainAxisSize: MainAxisSize.max,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        CachedNetworkImage(imageUrl: serverAddress + API.userAvatar.api + video.authorIcon, height: 22, width: 22,imageBuilder: (context, image) => Container(
-                          decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(12),
-                              image: DecorationImage(image: image, fit: BoxFit.cover)),
-                        )),
-                        Padding(padding: EdgeInsets.only(left: 6), child: Text(video.author, maxLines: 1, overflow: TextOverflow.ellipsis,),)
-                      ],
-                    ),
-                    Row(
-                      // crossAxisAlignment: en,
-                      children: [
-                        Icon(TypIconData(0xE087), color: Color(0xbb000000),),
-                        Text(" ${video.gotLikes.toString()}")
-                      ],
-                    )
-                  ],
-                ),),
+                Padding(
+                  padding: EdgeInsets.only(left: 10, right: 10),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.max,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          CachedNetworkImage(
+                              imageUrl: serverAddress +
+                                  API.userAvatar.api +
+                                  video.authorIcon,
+                              height: 22,
+                              width: 22,
+                              imageBuilder: (context, image) => Container(
+                                    decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(12),
+                                        image: DecorationImage(
+                                            image: image, fit: BoxFit.cover)),
+                                  )),
+                          Padding(
+                            padding: EdgeInsets.only(left: 6),
+                            child: Text(
+                              video.author,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          )
+                        ],
+                      ),
+                      Row(
+                        // crossAxisAlignment: en,
+                        children: [
+                          const Icon(
+                            TypIconData(0xE087),
+                            color: Color(0xbb000000),
+                          ),
+                          Text(" ${video.gotLikes.toString()}")
+                        ],
+                      )
+                    ],
+                  ),
+                ),
                 // Divider()
               ],
             ),

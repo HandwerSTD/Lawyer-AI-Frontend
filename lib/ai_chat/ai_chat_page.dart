@@ -58,24 +58,20 @@ class _AIChatPageState extends State<AIChatPage> {
     TextEditingController controller = TextEditingController();
 
     return Container(
-      margin: const EdgeInsets.all(12),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         mainAxisSize: MainAxisSize.max,
         children: [
           Expanded(
-            child: TextField(
-              autofocus: false,
-              controller: controller,
-              decoration: const InputDecoration(
-                hintText: "向紫小藤问点什么吧",
-              ),
-              readOnly: !sttTextFieldEnabled,
+            child: multilineTextField(
+              controller,
             ),
           ),
           IconButton(
               onPressed: () {
                 // TODO: Voice Recognize
+                showSnackBar(context, "暂未开放");
               },
               icon: Container(
                 padding: const EdgeInsets.all(3),
@@ -127,9 +123,12 @@ class _AIChatPageState extends State<AIChatPage> {
                 });
               },
               style: const ButtonStyle(
+                alignment: Alignment.center,
+                fixedSize: MaterialStatePropertyAll(Size.zero),
+                  padding: MaterialStatePropertyAll(EdgeInsets.only(left: 0)),
                   side: MaterialStatePropertyAll(
                       BorderSide(color: Color(0x99005ac2), width: 1.5))),
-              child: const Icon(Icons.send),
+              child: const Icon(Icons.send,),
             ),
           )
         ],
@@ -192,6 +191,25 @@ class _AIChatPageState extends State<AIChatPage> {
           ),
         )
       ],
+    );
+  }
+  Widget multilineTextField(TextEditingController cont) {
+    return Container(
+      margin: EdgeInsets.only(right: 2),
+      // color: Colors.red,
+      constraints: BoxConstraints(
+        maxHeight: 144.0,
+        // minHeight: 36.0,
+      ),
+      child: TextField(
+        autofocus: false,
+        readOnly: !sttTextFieldEnabled,
+        controller: cont,
+        minLines: 1,
+        maxLines: null,
+        keyboardType: TextInputType.multiline,
+        decoration: outlineBorderedInputDecoration("向紫小藤问点什么吧", 24, dense: true),
+      ),
     );
   }
 }

@@ -41,6 +41,7 @@ class MyAccount extends StatefulWidget {
 
 class _MyAccountState extends State<MyAccount> {
   List<VideoDataModel> videoList = [];
+  int pageNum = 1;
 
   @override
   void initState() {
@@ -54,8 +55,12 @@ class _MyAccountState extends State<MyAccount> {
             videoList.add(vid);
           });
         },
-        pageNum: 1,
-      );
+        pageNum: pageNum, setNetworkError: () {},
+      ).then((value) {
+        if (value != 0) {
+          ++pageNum;
+        }
+      });
     }
   }
 
@@ -88,14 +93,14 @@ class _MyAccountState extends State<MyAccount> {
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
           myAccountBlock(),
-          const Row(
+          Row(
             mainAxisSize: MainAxisSize.max,
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
               Padding(
                 padding: EdgeInsets.only(left: 36, top: 12, bottom: 12),
                 child: Text(
-                  "我的视频",
+                  "我的视频" /*+ (videoList.isEmpty ? "" : " ${videoList.length} 条")*/,
                   style: TextStyle(
                     fontSize: 18,
                   ),
@@ -108,10 +113,25 @@ class _MyAccountState extends State<MyAccount> {
               : (videoList.isEmpty
                   ? const Text("空空如也")
                   : Expanded(
-                      child: ShortVideoWaterfallList(
-                      videoList: videoList,
-                      loggedAccount: widget.loggedAccount, providedAuthorAvatar: widget.loggedAccount.avatar, loadMore: loadMoreContent,
-                    ))))
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 8),
+                        child: ShortVideoWaterfallList(
+                          videoList: videoList,
+                          loggedAccount: widget.loggedAccount,
+                          providedAuthorAvatar: widget.loggedAccount.avatar,
+                          loadMore: () {
+                            loadVideoByUser(uid: widget.loggedAccount.uid, pageNum: pageNum, add: (vid) {
+                              setState(() {
+                                videoList.add(vid);
+                              });
+                            }, setNetworkError: () {}).then((value) {
+                              if (value != 0) {
+                                ++pageNum;
+                              }
+                            });
+                          },
+                        ),
+                      ))))
         ],
       ),
     );

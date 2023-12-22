@@ -11,11 +11,11 @@ void getVideoList(Function(VideoDataModel video) add, Function setNetworkError,
   print("[ShortVideoPageIndex] fetching video list");
   http
       .post(
-    Uri.parse(serverAddress + API.videoRecommended.api),
-    headers: (cookie != "" ? jsonHeadersWithCookie(cookie) : jsonHeaders),
-    body: jsonEncode({"page_size": videosPerPage}),
-  )
-  .timeout(Duration(seconds: 10))
+        Uri.parse(serverAddress + API.videoRecommended.api),
+        headers: (cookie != "" ? jsonHeadersWithCookie(cookie) : jsonHeaders),
+        body: jsonEncode({"page_size": videosPerPage}),
+      )
+      .timeout(Duration(seconds: 10))
       .then((value) {
     var result = jsonDecode(Utf8Decoder().convert(value.bodyBytes));
     if (result["status"] != "success") throw HttpException(result["message"]);
@@ -31,7 +31,10 @@ void getVideoList(Function(VideoDataModel video) add, Function setNetworkError,
           gotLikes: videoList[i]["like"],
           liked: -1,
           authorUid: videoList[i]["author_id"],
-          id: (videoList[i]["uid"]), author: videoList[i]["author"], commentId: videoList[i]["comments_id"], authorIcon: videoList[i]["avatar"]));
+          id: (videoList[i]["uid"]),
+          author: videoList[i]["author"],
+          commentId: videoList[i]["comments_id"],
+          authorIcon: videoList[i]["avatar"]));
     }
   }).onError((error, stackTrace) {
     print(error);
@@ -39,17 +42,20 @@ void getVideoList(Function(VideoDataModel video) add, Function setNetworkError,
   });
 }
 
-void loadMoreContent(Function(VideoDataModel video) add, Function setNetworkError, Function? callback) {
+void videoRecommendLoadMoreContent(Function(VideoDataModel video) add,
+    Function setNetworkError, Function? callback) {
   getVideoList(add, setNetworkError);
 }
 
-void getSearchVideoList(String search, Function(VideoDataModel video) add) {
+Future<int> getSearchVideoList(String search, int pageNum,
+    Function(VideoDataModel video) add, Function setNetworkError) {
   print("[ShortVideoPageIndex] searching video list: $search");
-  http
+  return http
       .post(
     Uri.parse(serverAddress + API.videoSearch.api),
     headers: jsonHeaders,
-    body: jsonEncode({"title": search}),
+    body: jsonEncode(
+        {"title": search, "page": pageNum, "page_size": videosPerPage}),
   )
       .then((value) {
     var result = jsonDecode(Utf8Decoder().convert(value.bodyBytes));
@@ -60,50 +66,56 @@ void getSearchVideoList(String search, Function(VideoDataModel video) add) {
       add(VideoDataModel(
           videoSha1: videoList[i]["sha1"],
           videoImageLink:
-            serverAddress + API.videoCover.api + videoList[i]["cover_sha1"],
+              serverAddress + API.videoCover.api + videoList[i]["cover_sha1"],
           videoTitle: videoList[i]["title"],
           videoDesc: videoList[i]["description"],
           gotLikes: videoList[i]["like"],
           liked: -1,
           authorUid: videoList[i]["author_id"],
-          id: (videoList[i]["uid"]), author: videoList[i]["author"], commentId: videoList[i]["comments_id"], authorIcon: videoList[i]["avatar"]));
+          id: (videoList[i]["uid"]),
+          author: videoList[i]["author"],
+          commentId: videoList[i]["comments_id"],
+          authorIcon: videoList[i]["avatar"]));
     }
-  }).onError((error, stackTrace) {
+    return videoList.length;
+  }).catchError((error, stackTrace) {
+    setNetworkError();
     print(error);
   });
 }
 
-Future uploadNewVideo({required String title, required String desc, required String tags, required List<int> videoData, required List<int> coverData, required String cookie}) async {
+Future uploadNewVideo(
+    {required String title,
+    required String desc,
+    required String tags,
+    required List<int> videoData,
+    required List<int> coverData,
+    required String cookie}) async {
   print("[ShortVideo] Uploading Video");
-  var req = http.MultipartRequest('post', Uri.parse(serverAddress + API.videoUpload.api));
-  req.headers.addAll({
-    "content-type": "multipart/form-data",
-    "cookie": cookie
-  });
+  var req = http.MultipartRequest(
+      'post', Uri.parse(serverAddress + API.videoUpload.api));
+  req.headers.addAll({"content-type": "multipart/form-data", "cookie": cookie});
   req.fields.addAll({"title": title, "description": desc, "tags": tags});
-  req.files.add(http.MultipartFile.fromBytes('video', videoData, filename: "video"));
-  req.files.add(http.MultipartFile.fromBytes('cover', coverData, filename: "cover"));
+  req.files
+      .add(http.MultipartFile.fromBytes('video', videoData, filename: "video"));
+  req.files
+      .add(http.MultipartFile.fromBytes('cover', coverData, filename: "cover"));
   return req.send();
 }
 
 Future getVideoIsLiked(String cookie, VideoDataModel nowPlaying) {
-  return http.post(
-      Uri.parse(serverAddress + API.videoIsLiked.api),
+  return http.post(Uri.parse(serverAddress + API.videoIsLiked.api),
       headers: cookie == "" ? jsonHeaders : jsonHeadersWithCookie(cookie),
       // headers: jsonHeaders,
-      body: jsonEncode({
-        'vid': nowPlaying.id
-      })
-  );
+      body: jsonEncode({'vid': nowPlaying.id}));
 }
 
 Future<void> likeVideo(VideoDataModel video, String cookie, Function modify) {
-  return http.post(Uri.parse(serverAddress + API.videoLikeIt.api),
-      headers: jsonHeadersWithCookie(cookie),
-      body: jsonEncode({
-        'vid': video.id
-      })
-  ).then((value) {
+  return http
+      .post(Uri.parse(serverAddress + API.videoLikeIt.api),
+          headers: jsonHeadersWithCookie(cookie),
+          body: jsonEncode({'vid': video.id}))
+      .then((value) {
     var result = jsonDecode(Utf8Decoder().convert(value.bodyBytes));
     print(result);
     if (result["status"] != "success") throw HttpException("failed to like");
@@ -113,27 +125,42 @@ Future<void> likeVideo(VideoDataModel video, String cookie, Function modify) {
   });
 }
 
-Future<int> loadVideoByUser({required String uid, required Function add, required pageNum}) {
+Future<int> loadVideoByUser(
+    {required String uid,
+    required int pageNum,
+    required Function(VideoDataModel video) add,
+    required Function setNetworkError}) {
   print("[LoadVideoByUser] uid = $uid");
-  return http.post(Uri.parse(serverAddress + API.userListVideo.api),
-      headers: jsonHeaders,
-      body: jsonEncode({
-        'uid': uid,
-        'page': pageNum,
-        'page_size': videosPerPage
-      })
-  ).then((value) {
-    print(value.statusCode);
+  return http
+      .post(
+    Uri.parse(serverAddress + API.userListVideo.api),
+    headers: jsonHeaders,
+    body: jsonEncode({'uid': uid, 'page': pageNum, 'page_size': videosPerPage}),
+  )
+      .then((value) {
     var result = jsonDecode(Utf8Decoder().convert(value.bodyBytes));
     print(result);
     if (result["status"] != "success") throw HttpException(result["message"]);
-    List commentList = result["result"];
-    print(commentList);
-    for (var element in commentList) {
-      add(CommentDataModel(AccountDataModel(element["author"], element["author_id"], element["avatar"], ""), element["content"], element["timestamp"]));
+    var videoList = result["result"];
+    print(videoList);
+    for (int i = 0; i < (videoList as List).length; ++i) {
+      add(VideoDataModel(
+          videoSha1: videoList[i]["sha1"],
+          videoImageLink:
+              serverAddress + API.videoCover.api + videoList[i]["cover_sha1"],
+          videoTitle: videoList[i]["title"],
+          videoDesc: videoList[i]["description"],
+          gotLikes: videoList[i]["like"],
+          liked: -1,
+          authorUid: videoList[i]["author_id"],
+          id: (videoList[i]["uid"]),
+          author: videoList[i]["author"],
+          commentId: videoList[i]["comments_id"],
+          authorIcon: videoList[i]["avatar"]));
     }
-    return commentList.length;
-  }).catchError((err) {
-    print(err);
+    return videoList.length;
+  }).catchError((error, stackTrace) {
+    setNetworkError();
+    print(error);
   });
 }

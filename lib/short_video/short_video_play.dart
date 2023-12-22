@@ -65,7 +65,7 @@ class _ShortVideoPlayState extends State<ShortVideoPlay> {
         onPageChanged: (index) {
           if (index == videos.length - 1) {
             print("[ShortVideoPlay] Scrolled to end");
-            loadMoreContent((vid) => (vid) {
+            videoRecommendLoadMoreContent((vid) => (vid) {
               setState(() {
                 videos.add(vid);
               });
@@ -195,6 +195,7 @@ class _VideoPlayBlockState extends State<VideoPlayBlock> {
           Icon(
             Icons.play_arrow,
             color: (isPlaying ? Colors.transparent : Colors.white70),
+            shadows: (!isPlaying ? kElevationToShadow[6] : []),
             size: 60,
           ),
         ],
@@ -290,14 +291,16 @@ class _VideoPlayBlockState extends State<VideoPlayBlock> {
             icon: (video.liked == 1 ? Icons.thumb_up : Icons.thumb_up_outlined),
             onPressed: () {
               if (!loaded) return;
-              if (video.liked == -1) return;
+              if (video.liked == -1) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text("请先登录"), duration: Duration(milliseconds: 1000),));
+                return;
+              }
               setState(() {
                 widget.nowPlaying.liked =
                 (widget.nowPlaying.liked == 1 ? 0 : 1);
               });
-              likeVideo(video, widget.loggedAccount.cookie, (){
-
-              });
+              likeVideo(video, widget.loggedAccount.cookie, (){});
             }),
         bottomFABSingle(
             icon: Icons.comment,

@@ -174,8 +174,10 @@ class NetworkErrorPlaceholder extends StatelessWidget {
   }
 }
 
-InputDecoration outlineBorderedInputDecoration(String hint, double rad) => InputDecoration(
-  contentPadding: EdgeInsets.only(left: 14, right: 14, top: 14, bottom: 14),
+InputDecoration outlineBorderedInputDecoration(String hint, double rad,
+    {bool dense = false}) => InputDecoration(
+  isDense: dense,
+  contentPadding: EdgeInsets.symmetric(vertical: 8.5, horizontal: 12),
   border: OutlineInputBorder(
     // borderSide: BorderSide(width: 1, color: Colors.lightBlue),
     borderRadius: BorderRadius.all(Radius.circular(rad))

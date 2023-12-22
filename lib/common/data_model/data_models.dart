@@ -51,7 +51,9 @@ class AccountDataModel {
   String uid = "";
   String avatar = "";
   String cookie = "";
-  AccountDataModel(this.name, this.uid, this.avatar, this.cookie);
+  int videoNum = 0;
+  AccountDataModel(this.name, this.uid, this.avatar, this.cookie,
+      {this.videoNum = 0});
 }
 
 class StorageDataModel extends ChangeNotifier {
