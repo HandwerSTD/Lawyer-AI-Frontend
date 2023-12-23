@@ -141,7 +141,6 @@ class _AccountLoginState extends State<AccountLogin> {
         .timeout(Duration(seconds: 5))
         .then((value) {
       print(value.body);
-      var result = jsonDecode(Utf8Decoder().convert(value.bodyBytes));
       var cookie = value.headers["set-cookie"];
       if (cookie != null) {
         int index = cookie.indexOf(';');

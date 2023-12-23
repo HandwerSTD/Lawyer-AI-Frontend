@@ -22,6 +22,7 @@ class VideoDataModel {
   String videoImageLink = "";
   String videoTitle = "";
   String videoDesc = "";
+  double timestamp = 0;
   int gotLikes = 0;
   int liked = -1; // -1: undefined
   VideoDataModel(
@@ -35,7 +36,8 @@ class VideoDataModel {
       required this.id,
       required this.author,
       required this.authorIcon,
-      required this.commentId});
+      required this.commentId,
+      required this.timestamp});
 }
 
 class CommentDataModel {

@@ -40,23 +40,6 @@ class _ShortVideoWaterfallListState extends State<ShortVideoWaterfallList> {
       if (wfController.position.pixels ==
           wfController.position.maxScrollExtent) {
         print("[ShortVideoList] Scrolled to end, loading data");
-        // if (widget.searchInfo == "") {
-        //   widget.loadMore((vid) {
-        //     setState(() {
-        //       sttVideoList.add(vid);
-        //     });
-        //   }, () {
-        //     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("网络错误")));
-        //   } , () {}); // 到底部加载新内容
-        // } else {
-        //   widget.loadMore(widget.searchInfo, (vid) {
-        //     setState(() {
-        //       sttVideoList.add(vid);
-        //     });
-        //   }, () {
-        //     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("网络错误")));
-        //   } , () {}); // 到底部加载新内容
-        // }
         widget.loadMore();
       }
     });
@@ -86,7 +69,9 @@ class _ShortVideoWaterfallListState extends State<ShortVideoWaterfallList> {
                     builder: (context) => ShortVideoPlay(
                           videos: sttVideoList,
                           videoIndex: sttVideoList.indexOf(video),
-                          loggedAccount: widget.loggedAccount,
+                          loggedAccount: widget.loggedAccount, loadVideo: () async {
+                            return widget.loadMore();
+                    },
                         )));
           },
           child: Padding(
@@ -94,20 +79,24 @@ class _ShortVideoWaterfallListState extends State<ShortVideoWaterfallList> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Padding(
-                  padding: const EdgeInsets.only(
+                Container(
+                  margin: const EdgeInsets.only(
                       left: 5, right: 5, top: 5, bottom: 12),
-                  child: CachedNetworkImage(
-                    imageUrl: video.videoImageLink,
-                    placeholder: (context, url) => const Center(
-                        child: SizedBox(
-                      height: 300,
-                      child: Center(
-                        child: CircularProgressIndicator(),
-                      ),
-                    )),
-                    errorWidget: (context, url, error) =>
-                        const Icon(Icons.error),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: CachedNetworkImage(
+                      fit: BoxFit.cover,
+                      imageUrl: video.videoImageLink,
+                      placeholder: (context, url) => const Center(
+                          child: SizedBox(
+                        height: 300,
+                        child: Center(
+                          child: CircularProgressIndicator(),
+                        ),
+                      )),
+                      errorWidget: (context, url, error) =>
+                          const Icon(Icons.error),
+                    ),
                   ),
                 ),
                 Padding(

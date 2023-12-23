@@ -51,36 +51,47 @@ class _ShortVideoPageIndexState extends State<ShortVideoPageIndex> {
     // TODO: Border & Background as Design
     return Scaffold(
       appBar: AppBar(
-        // automaticallyImplyLeading: false,
-        title: const Text('社区'),
-        actions: [
-          IconButton(
-              onPressed: () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => ShortVideoSearch(
-                            loggedAccount: widget.loggedAccount)));
-              },
-              icon: const Icon(Icons.search)),
-          IconButton(
-              onPressed: () {
-                sttVideoList.clear();
-                setState(() {
-                  isNetworkError = false;
-                });
-                getVideoList((vid) {
-                  setState(() {
-                    sttVideoList.add(vid);
-                  });
-                }, () {
-                  setState(() {
-                    isNetworkError = true;
-                  });
-                });
-              },
-              icon: const Icon(Icons.refresh))
-        ],
+        toolbarHeight: 72,
+        titleSpacing: 4,
+        automaticallyImplyLeading: false,
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                IconButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    icon: const Icon(
+                      Icons.arrow_back,
+                      color: Colors.black,
+                    )),
+                const Padding(
+                  padding: EdgeInsets.only(top: 2),
+                  child: Text('社区'),
+                )
+              ],
+            ),
+            Padding(
+              padding: EdgeInsets.only(right: 6),
+              child: SearchAppBar(
+                hintLabel: "搜索视频",
+                onSubmitted: (val) {},
+                widthFactor: 0.65,
+                readOnly: true,
+                onTap: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => ShortVideoSearch(
+                              loggedAccount: widget.loggedAccount)));
+                },
+              ),
+            )
+          ],
+        ),
       ),
       body: Center(
           child: Stack(children: [
@@ -90,24 +101,40 @@ class _ShortVideoPageIndexState extends State<ShortVideoPageIndex> {
               child: Stack(
                 alignment: Alignment.bottomRight,
                 children: [
-                  (isNetworkError
-                      ? NetworkErrorPlaceholder()
-                      : ShortVideoWaterfallList(
-                          videoList: sttVideoList,
-                          loggedAccount: widget.loggedAccount,
-                          providedAuthorAvatar: '',
-                          loadMore: () {
-                            videoRecommendLoadMoreContent((vid) {
-                              setState(() {
-                                sttVideoList.add(vid);
-                              });
-                            }, () {
-                              setState(() {
-                                isNetworkError = true;
-                              });
-                            }, (){});
-                          },
-                        )),
+                  RefreshIndicator(
+                      child: (isNetworkError
+                          ? NetworkErrorPlaceholder()
+                          : ShortVideoWaterfallList(
+                              videoList: sttVideoList,
+                              loggedAccount: widget.loggedAccount,
+                              providedAuthorAvatar: '',
+                              loadMore: () async {
+                                return videoRecommendLoadMoreContent((vid) {
+                                  setState(() {
+                                    sttVideoList.add(vid);
+                                  });
+                                }, () {
+                                  setState(() {
+                                    isNetworkError = true;
+                                  });
+                                }, () {});
+                              },
+                            )),
+                      onRefresh: () async {
+                        setState(() {
+                          sttVideoList.clear();
+                          isNetworkError = false;
+                        });
+                        await getVideoList((vid) {
+                          setState(() {
+                            sttVideoList.add(vid);
+                          });
+                        }, () {
+                          setState(() {
+                            isNetworkError = true;
+                          });
+                        });
+                      }),
                   Padding(
                     padding: EdgeInsets.all(24),
                     child: FloatingActionButton.extended(

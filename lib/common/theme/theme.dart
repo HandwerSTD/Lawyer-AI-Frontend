@@ -188,8 +188,8 @@ InputDecoration outlineBorderedInputDecoration(String hint, double rad,
   hintStyle: TextStyle(color: Colors.grey),
 );
 
-void showSnackBar(BuildContext context, String text) {
-  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
+void showSnackBar(BuildContext context, String text, {int seconds = 1}) {
+  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text), duration: Duration(seconds: seconds),));
 }
 
 Widget appIconImage({margin = const EdgeInsets.only(bottom: 12, top: 48)}) {

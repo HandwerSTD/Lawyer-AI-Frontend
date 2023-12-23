@@ -41,6 +41,7 @@ void submitNewMessage(String text, String cookie, Function(ChatMsgData msg) add,
 Future isolateFlushSession(Function(String dt) append, {required String session, required String cookie, required Function callback}) async {
   final response = ReceivePort();
   final isolate = await Isolate.spawn(flushSession, response.sendPort);
+  bool start = true;
   response.listen((message) async {
     if (message is String) {
       if (message.endsWith("<EOF>")) {
@@ -50,6 +51,10 @@ Future isolateFlushSession(Function(String dt) append, {required String session,
         isolate.kill(priority: Isolate.immediate);
         callback();
       } else {
+        if (start && message.startsWith('\n')) {
+          message = message.replaceAll('\n', '');
+          start = false;
+        }
         await append(message);
       }
     }

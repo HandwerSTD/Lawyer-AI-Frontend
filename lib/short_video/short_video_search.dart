@@ -34,11 +34,12 @@ class _ShortVideoSearchState extends State<ShortVideoSearch> {
     super.initState();
   }
 
-  void setNetworkError () {
+  void setNetworkError() {
     setState(() {
       isNetworkError = true;
     });
   }
+
   void appendVideoList(vid) {
     setState(() {
       sttVideoList.add(vid);
@@ -62,7 +63,8 @@ class _ShortVideoSearchState extends State<ShortVideoSearch> {
               sttVideoList.clear();
             });
             pageNum = 1;
-            getSearchVideoList(value, pageNum, appendVideoList, setNetworkError).then((value) {
+            getSearchVideoList(value, pageNum, appendVideoList, setNetworkError)
+                .then((value) {
               if (value != 0) {
                 ++pageNum;
               } else {
@@ -72,6 +74,7 @@ class _ShortVideoSearchState extends State<ShortVideoSearch> {
               }
             });
           },
+          widthFactor: 0.8, readOnly: false, onTap: (){},
         ),
       ),
       body: Center(
@@ -84,20 +87,22 @@ class _ShortVideoSearchState extends State<ShortVideoSearch> {
                 children: [
                   (isNetworkError
                       ? NetworkErrorPlaceholder()
-                      : (
-                  isSearchEmpty ? Text("空空如也") : ShortVideoWaterfallList(
-                    videoList: sttVideoList,
-                    loggedAccount: widget.loggedAccount,
-                    providedAuthorAvatar: '',
-                    loadMore: () {
-                      getSearchVideoList(searchContent, pageNum, appendVideoList, setNetworkError).then((value) {
-                        if (value != 0) {
-                          ++pageNum;
-                        }
-                      });
-                    },
-                  )
-                  )),
+                      : (isSearchEmpty
+                          ? Text("空空如也")
+                          : ShortVideoWaterfallList(
+                              videoList: sttVideoList,
+                              loggedAccount: widget.loggedAccount,
+                              providedAuthorAvatar: '',
+                              loadMore: () {
+                                getSearchVideoList(searchContent, pageNum,
+                                        appendVideoList, setNetworkError)
+                                    .then((value) {
+                                  if (value != 0) {
+                                    ++pageNum;
+                                  }
+                                });
+                              },
+                            ))),
                 ],
               ),
             )
@@ -109,9 +114,18 @@ class _ShortVideoSearchState extends State<ShortVideoSearch> {
 }
 
 class SearchAppBar extends StatefulWidget {
-  SearchAppBar({Key? key, required this.hintLabel, required this.onSubmitted})
+  SearchAppBar(
+      {Key? key,
+      required this.hintLabel,
+      required this.onSubmitted,
+      required this.widthFactor,
+      required this.readOnly,
+      required this.onTap})
       : super(key: key);
   final String hintLabel;
+  double widthFactor = 0.8;
+  bool readOnly = false;
+  Function onTap;
   // 回调函数
   final Function(String) onSubmitted;
 
@@ -140,8 +154,8 @@ class _SearchAppBarState extends State<SearchAppBar> {
     // 获取屏幕尺寸
     MediaQueryData queryData = MediaQuery.of(context);
     return Container(
-      // 宽度为屏幕的0.8
-      width: queryData.size.width * 0.8,
+      // 宽度为width * factor
+      width: queryData.size.width * widget.widthFactor,
       // appBar默认高度是56，这里搜索框设置为40
       height: 40,
       // 设置padding
@@ -160,6 +174,8 @@ class _SearchAppBarState extends State<SearchAppBar> {
         // 自动获取焦点
         focusNode: _focusNode,
         autofocus: true,
+        readOnly: widget.readOnly,
+        onTap: (widget.readOnly ? () {widget.onTap();} : null),
         decoration: InputDecoration(
             isDense: true,
             contentPadding: EdgeInsets.symmetric(horizontal: 0, vertical: 0),

@@ -23,8 +23,9 @@ class AIChatPage extends StatefulWidget {
 
 class _AIChatPageState extends State<AIChatPage> {
   List<ChatMsgData> sttChatMsgList = [];
-  bool sttTextFieldEnabled = true;
+  bool sttIsInputable = true;
   ScrollController scrollController = ScrollController();
+  FocusNode teFocus = FocusNode();
 
   @override
   void initState() {
@@ -44,14 +45,22 @@ class _AIChatPageState extends State<AIChatPage> {
         children: [
           Expanded(
               child: ListView(
-                shrinkWrap: true,
-                controller: scrollController,
-                children: sttChatMsgList.map((e) => chatMessageBlock(e)).toList(),
-              )),
+            physics: (!sttIsInputable
+                ? NeverScrollableScrollPhysics()
+                : ClampingScrollPhysics()),
+            shrinkWrap: true,
+            controller: scrollController,
+            children: sttChatMsgList.map((e) => chatMessageBlock(e)).toList(),
+          )),
           bottomSendMsgButton()
         ],
       ),
     );
+  }
+
+  void scrollToBottom() {
+    scrollController.animateTo(scrollController.position.maxScrollExtent,
+        duration: Duration(milliseconds: 500), curve: Curves.ease);
   }
 
   Widget bottomSendMsgButton() {
@@ -86,6 +95,7 @@ class _AIChatPageState extends State<AIChatPage> {
             margin: const EdgeInsets.only(left: 5),
             child: ElevatedButton(
               onPressed: () {
+                // Pre init
                 if (widget.loggedAccount.cookie == "") {
                   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                     content: Text("请先登录"),
@@ -94,41 +104,41 @@ class _AIChatPageState extends State<AIChatPage> {
                   return;
                 }
                 setState(() {
-                  sttTextFieldEnabled = false;
-                  scrollController.animateTo(
-                      scrollController.position.maxScrollExtent,
-                      duration: Duration(milliseconds: 500),
-                      curve: Curves.ease);
+                  teFocus.unfocus();
+                  scrollToBottom();
                 });
+                // Submit
                 submitNewMessage(controller.text, widget.loggedAccount.cookie,
                     (val) {
                   setState(() {
+                    sttIsInputable = false;
                     sttChatMsgList.add(val);
                   });
                 }, (apd) async {
                   setState(() {
                     sttChatMsgList.last.append(apd);
+                    scrollToBottom();
                   });
                 }, () {
                   setState(() {
-                    sttTextFieldEnabled = true;
-                    scrollController.animateTo(
-                        scrollController.position.maxScrollExtent,
-                        duration: Duration(milliseconds: 500),
-                        curve: Curves.ease);
+                    sttIsInputable = true;
                   });
+                  scrollToBottom();
                 }, () {
                   ScaffoldMessenger.of(context)
                       .showSnackBar(SnackBar(content: Text("网络错误")));
+                  sttIsInputable = true;
                 });
               },
               style: const ButtonStyle(
-                alignment: Alignment.center,
-                fixedSize: MaterialStatePropertyAll(Size.zero),
+                  alignment: Alignment.center,
+                  fixedSize: MaterialStatePropertyAll(Size.zero),
                   padding: MaterialStatePropertyAll(EdgeInsets.only(left: 0)),
                   side: MaterialStatePropertyAll(
                       BorderSide(color: Color(0x99005ac2), width: 1.5))),
-              child: const Icon(Icons.send,),
+              child: const Icon(
+                Icons.send,
+              ),
             ),
           )
         ],
@@ -193,6 +203,7 @@ class _AIChatPageState extends State<AIChatPage> {
       ],
     );
   }
+
   Widget multilineTextField(TextEditingController cont) {
     return Container(
       margin: EdgeInsets.only(right: 2),
@@ -202,13 +213,16 @@ class _AIChatPageState extends State<AIChatPage> {
         // minHeight: 36.0,
       ),
       child: TextField(
+        focusNode: teFocus,
+        autocorrect: false,
         autofocus: false,
-        readOnly: !sttTextFieldEnabled,
+        readOnly: !sttIsInputable,
         controller: cont,
         minLines: 1,
         maxLines: null,
         keyboardType: TextInputType.multiline,
-        decoration: outlineBorderedInputDecoration("向紫小藤问点什么吧", 24, dense: true),
+        decoration:
+            outlineBorderedInputDecoration("向紫小藤问点什么吧", 24, dense: true),
       ),
     );
   }

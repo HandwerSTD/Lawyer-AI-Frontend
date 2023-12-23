@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get_navigation/src/root/get_material_app.dart';
 import 'package:lawyer_ai_frontend/account/my_account_page.dart';
 import 'package:lawyer_ai_frontend/common/data_model/data_models.dart';
@@ -12,23 +13,29 @@ import 'common/theme/theme.dart';
 
 void main() {
   runApp(GetMaterialApp(
+      debugShowCheckedModeBanner: false,
       title: '紫藤法道',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blueAccent),
-        useMaterial3: true,
-        fontFamily: "HarmonyOS Sans SC"
-      ),
+          // appBarTheme: AppBarTheme(
+          //   systemOverlayStyle: SystemUiOverlayStyle(
+          //     systemNavigationBarColor: Colors.white,
+          //     statusBarColor: Colors.white,
+          //       statusBarIconBrightness: Brightness.dark
+          //   )
+          // ),
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.blueAccent),
+          useMaterial3: true,
+          fontFamily: "HarmonyOS Sans SC"),
       home: ChangeNotifierProvider(
         create: (context) => StorageDataModel(),
         child: MyApp(),
       ),
-      routes: { //注册路由
+      routes: {
+        //注册路由
         // //search 表示注册名  SearchPage表示跳转页面
         // '/search':(context) => SearchPage(),
         // '/textWork':(context)=>TextWordPage()
-      }
-    )
-  );
+      }));
 }
 
 class MyApp extends StatefulWidget {
@@ -49,18 +56,39 @@ class _MyAppState extends State<MyApp> {
         // backgroundColor: themeAccent,
         title: const Text("紫藤法道"),
         actions: [
-          appBarIconButton(icon: const Icon(Icons.home), text: const Text("社区"), onPressed: () {
-            if (kDebugMode) {
-              print("[Main Page] Navigating to ShortVideoWaterfall");
-            }
-            Navigator.push(context, MaterialPageRoute(builder: (context) => ShortVideoPageIndex(loggedAccount: loggedAccount,), settings: RouteSettings(name: '/home')));
-          }),
-          appBarIconButton(icon: const Icon(Icons.account_circle), text: const Text("我的"), onPressed: () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => MyAccount(loggedAccount: loggedAccount), settings: RouteSettings(name: '/home')));
-          }),
+          appBarIconButton(
+              icon: const Icon(Icons.home),
+              text: const Text("社区"),
+              onPressed: () {
+                if (kDebugMode) {
+                  print("[Main Page] Navigating to ShortVideoWaterfall");
+                }
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => ShortVideoPageIndex(
+                              loggedAccount: loggedAccount,
+                            ),
+                        settings: RouteSettings(name: '/home')));
+              }),
+          appBarIconButton(
+              icon: const Icon(Icons.account_circle),
+              text: const Text("我的"),
+              onPressed: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => MyAccount(
+                              loggedAccount: loggedAccount,
+                              isVisitor: false,
+                            ),
+                        settings: RouteSettings(name: '/home')));
+              }),
         ],
       ),
-      body: AIChatPage(loggedAccount: loggedAccount,),
+      body: AIChatPage(
+        loggedAccount: loggedAccount,
+      ),
     );
   }
 }

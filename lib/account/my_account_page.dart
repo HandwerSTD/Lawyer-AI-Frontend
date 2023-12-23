@@ -33,7 +33,8 @@ import 'package:lawyer_ai_frontend/short_video/short_video_list.dart';
 
 class MyAccount extends StatefulWidget {
   AccountDataModel loggedAccount;
-  MyAccount({super.key, required this.loggedAccount});
+  bool isVisitor;
+  MyAccount({super.key, required this.loggedAccount, required this.isVisitor});
 
   @override
   State<MyAccount> createState() => _MyAccountState();
@@ -42,25 +43,31 @@ class MyAccount extends StatefulWidget {
 class _MyAccountState extends State<MyAccount> {
   List<VideoDataModel> videoList = [];
   int pageNum = 1;
+  bool isVisitor = false;
+
+  void loadVideo() {
+    loadVideoByUser(
+      uid: widget.loggedAccount.uid,
+      add: (vid) {
+        setState(() {
+          videoList.add(vid);
+        });
+      },
+      pageNum: pageNum, setNetworkError: () {},
+    ).then((value) {
+      if (value["length"] != 0) {
+        ++pageNum;
+      }
+      widget.loggedAccount.videoNum = value["count"]!;
+    });
+  }
 
   @override
   void initState() {
     super.initState();
-    // TODO: Fetch User's Video
+    isVisitor = widget.isVisitor;
     if (widget.loggedAccount.cookie != "") {
-      loadVideoByUser(
-        uid: widget.loggedAccount.uid,
-        add: (vid) {
-          setState(() {
-            videoList.add(vid);
-          });
-        },
-        pageNum: pageNum, setNetworkError: () {},
-      ).then((value) {
-        if (value != 0) {
-          ++pageNum;
-        }
-      });
+      loadVideo();
     }
   }
 
@@ -70,23 +77,35 @@ class _MyAccountState extends State<MyAccount> {
 
   @override
   Widget build(BuildContext context) {
+    final title, listTitle, appBarItems;
+    if (isVisitor) {
+      title = "Ta 的主页";
+      listTitle = "Ta 的视频";
+      appBarItems = <Widget>[];
+    } else {
+      title = "我的";
+      listTitle = "我的视频";
+      appBarItems = [
+        appBarIconButton(
+            onPressed: () {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => SettingsPage(
+                          loggedAccount: widget.loggedAccount)))
+                  .then((value) => refreshState());
+            },
+            icon: Icon(Icons.settings),
+            text: Text("设置"),
+            color: Colors.black)
+      ];
+    }
+
+
     return Scaffold(
       appBar: AppBar(
-        title: Text("我的"),
-        actions: [
-          appBarIconButton(
-              onPressed: () {
-                Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => SettingsPage(
-                                loggedAccount: widget.loggedAccount)))
-                    .then((value) => refreshState());
-              },
-              icon: Icon(Icons.settings),
-              text: Text("设置"),
-              color: Colors.black)
-        ],
+        title: Text(title),
+        actions: appBarItems,
       ),
       body: Column(
         mainAxisSize: MainAxisSize.max,
@@ -100,7 +119,7 @@ class _MyAccountState extends State<MyAccount> {
               Padding(
                 padding: EdgeInsets.only(left: 36, top: 12, bottom: 12),
                 child: Text(
-                  "我的视频" /*+ (videoList.isEmpty ? "" : " ${videoList.length} 条")*/,
+                  listTitle + (videoList.isEmpty ? "" : " ${widget.loggedAccount.videoNum} 条"),
                   style: TextStyle(
                     fontSize: 18,
                   ),
@@ -140,6 +159,8 @@ class _MyAccountState extends State<MyAccount> {
   Widget myAccountBlock() {
     return GestureDetector(
       onTap: () {
+        if (isVisitor) return;
+
         Navigator.push(
             context,
             MaterialPageRoute(
@@ -149,7 +170,14 @@ class _MyAccountState extends State<MyAccount> {
                         loggedAccount: widget.loggedAccount)
                     : AccountDetails(
                         loggedAccount: widget.loggedAccount,
-                      )))).then((value) => refreshState());
+                      )))).then((value) {
+                        if (widget.loggedAccount.cookie != "") {
+                          setState(() {
+
+                            loadVideo();
+                          });
+                        }
+        });
         setState(() {});
       },
       child: Container(

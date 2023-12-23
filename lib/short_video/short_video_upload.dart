@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:lawyer_ai_frontend/common/theme/theme.dart';
+import 'package:lawyer_ai_frontend/common/utils/cache_utils.dart';
 import 'package:lawyer_ai_frontend/short_video/apis/short_video_api.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
 
@@ -25,6 +26,7 @@ class _ShortVideoUploadState extends State<ShortVideoUpload> {
   TextEditingController descController = TextEditingController();
   Uint8List coverData = Uint8List(0);
   bool loaded = false;
+  bool isVideoUploading = false;
 
   @override
   void initState() {
@@ -89,8 +91,12 @@ class _ShortVideoUploadState extends State<ShortVideoUpload> {
                 // setState(() {
                 //   coverData = (await result?.readAsBytes() ?? coverData);
                 // });
-                ImagePicker().pickImage(source: ImageSource.gallery, maxWidth: 720, maxHeight: 720)
-                .then((value) {
+                ImagePicker()
+                    .pickImage(
+                        source: ImageSource.gallery,
+                        maxWidth: 720,
+                        maxHeight: 720)
+                    .then((value) {
                   value?.readAsBytes().then((val) {
                     setState(() {
                       coverData = (val.isEmpty ? coverData : val);
@@ -100,54 +106,68 @@ class _ShortVideoUploadState extends State<ShortVideoUpload> {
               },
               child: Padding(
                 padding: EdgeInsets.all(12),
-                child: (loaded ? Stack(
-                  alignment: Alignment.bottomCenter,
-                  children: [
-                    (Image.memory(coverData)),
-                    const Text(
-                      "点击更换封面",
-                      style: TextStyle(
-                          fontSize: 18,
-                          backgroundColor: Colors.black54, color: Colors.white),
-                    ),
-                  ],
-                ) : CircularProgressIndicator()),
+                child: (loaded
+                    ? Stack(
+                        alignment: Alignment.bottomCenter,
+                        children: [
+                          (Image.memory(coverData)),
+                          const Text(
+                            "点击更换封面",
+                            style: TextStyle(
+                                fontSize: 18,
+                                backgroundColor: Colors.black54,
+                                color: Colors.white),
+                          ),
+                        ],
+                      )
+                    : CircularProgressIndicator()),
               ),
             )),
-            ElevatedButton(
-                onPressed: () async {
-                  String title = titleController.value.text,
-                      desc = descController.value.text,
-                      tags = tagsController.value.text;
-                  if (title == "" || desc == "" || tags == "") {
-                    showSnackBar(context, "视频信息不能为空");
-                  }
-                  var videoData = await widget.selectedFile.readAsBytes();
-                  showSnackBar(context, "视频上传中");
-                  var response = await uploadNewVideo(
-                      title: title,
-                      desc: desc,
-                      tags: tags,
-                      videoData: videoData,
-                      coverData: coverData,
-                      cookie: widget.loggedAccount.cookie);
-                  var resp =
-                      await response.stream.transform(utf8.decoder).join();
-                  print("[ShortVideoUpload] res: $resp");
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                      content: Text("${jsonDecode(resp)["message"]}")));
-                  Navigator.pop(context);
-                },
-                child: const Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Expanded(
-                        child: Text(
-                      "上传视频",
-                      textAlign: TextAlign.center,
-                    ))
-                  ],
-                ))
+            IgnorePointer(
+              ignoring: isVideoUploading,
+              child: ElevatedButton(
+                  onPressed: () async {
+                    String title = titleController.value.text,
+                        desc = descController.value.text,
+                        tags = tagsController.value.text;
+                    if (title == "" || desc == "" || tags == "") {
+                      showSnackBar(context, "视频信息不能为空");
+                      return;
+                    }
+                    var videoData = await widget.selectedFile.readAsBytes();
+                    showSnackBar(context, "视频上传中");
+                    setState(() {
+                      isVideoUploading = true;
+                    });
+                    var response = await uploadNewVideo(
+                        title: title,
+                        desc: desc,
+                        tags: tags,
+                        videoData: videoData,
+                        coverData: coverData,
+                        cookie: widget.loggedAccount.cookie);
+                    var resp =
+                        await response.stream.transform(utf8.decoder).join();
+                    var rsp = jsonDecode(resp);
+                    print("[ShortVideoUpload] res: $resp");
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                        content: Text(
+                            (rsp["status"] == "success" ? "上传成功" : "上传失败"))));
+                    //${resp["message"]}
+                    await CacheUtil.clear(); // 清除缓存 不知道有没有用
+                    Navigator.pop(context);
+                  },
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Expanded(
+                          child: Text(
+                        (isVideoUploading ? "上传中" : "上传视频"),
+                        textAlign: TextAlign.center,
+                      ))
+                    ],
+                  )),
+            )
           ],
         ),
       ),

@@ -5,11 +5,10 @@ import '../../common/constant/constants.dart';
 import '../../common/data_model/data_models.dart';
 import 'package:http/http.dart' as http;
 
-void getVideoList(Function(VideoDataModel video) add, Function setNetworkError,
+Future getVideoList(Function(VideoDataModel video) add, Function setNetworkError,
     {String cookie = ""}) {
-  /* TODO: Implement API */
   print("[ShortVideoPageIndex] fetching video list");
-  http
+  return http
       .post(
         Uri.parse(serverAddress + API.videoRecommended.api),
         headers: (cookie != "" ? jsonHeadersWithCookie(cookie) : jsonHeaders),
@@ -34,7 +33,7 @@ void getVideoList(Function(VideoDataModel video) add, Function setNetworkError,
           id: (videoList[i]["uid"]),
           author: videoList[i]["author"],
           commentId: videoList[i]["comments_id"],
-          authorIcon: videoList[i]["avatar"]));
+          authorIcon: videoList[i]["avatar"], timestamp: videoList[i]["timestamp"]));
     }
   }).onError((error, stackTrace) {
     print(error);
@@ -42,9 +41,9 @@ void getVideoList(Function(VideoDataModel video) add, Function setNetworkError,
   });
 }
 
-void videoRecommendLoadMoreContent(Function(VideoDataModel video) add,
+Future videoRecommendLoadMoreContent(Function(VideoDataModel video) add,
     Function setNetworkError, Function? callback) {
-  getVideoList(add, setNetworkError);
+  return getVideoList(add, setNetworkError);
 }
 
 Future<int> getSearchVideoList(String search, int pageNum,
@@ -75,7 +74,7 @@ Future<int> getSearchVideoList(String search, int pageNum,
           id: (videoList[i]["uid"]),
           author: videoList[i]["author"],
           commentId: videoList[i]["comments_id"],
-          authorIcon: videoList[i]["avatar"]));
+          authorIcon: videoList[i]["avatar"], timestamp: videoList[i]["timestamp"]));
     }
     return videoList.length;
   }).catchError((error, stackTrace) {
@@ -125,7 +124,7 @@ Future<void> likeVideo(VideoDataModel video, String cookie, Function modify) {
   });
 }
 
-Future<int> loadVideoByUser(
+Future<Map<String, int>> loadVideoByUser(
     {required String uid,
     required int pageNum,
     required Function(VideoDataModel video) add,
@@ -141,6 +140,7 @@ Future<int> loadVideoByUser(
     var result = jsonDecode(Utf8Decoder().convert(value.bodyBytes));
     print(result);
     if (result["status"] != "success") throw HttpException(result["message"]);
+    int count = result["count_items"];
     var videoList = result["result"];
     print(videoList);
     for (int i = 0; i < (videoList as List).length; ++i) {
@@ -156,9 +156,9 @@ Future<int> loadVideoByUser(
           id: (videoList[i]["uid"]),
           author: videoList[i]["author"],
           commentId: videoList[i]["comments_id"],
-          authorIcon: videoList[i]["avatar"]));
+          authorIcon: videoList[i]["avatar"], timestamp: videoList[i]["timestamp"]));
     }
-    return videoList.length;
+    return {"length": videoList.length, "count" : count};
   }).catchError((error, stackTrace) {
     setNetworkError();
     print(error);

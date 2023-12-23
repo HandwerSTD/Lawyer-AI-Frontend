@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
 import 'package:lawyer_ai_frontend/common/data_model/data_models.dart';
+import 'package:lawyer_ai_frontend/common/theme/theme.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:http/http.dart' as http;
 
@@ -173,6 +174,7 @@ class _AccountRegisterState extends State<AccountRegister> {
         onRegErr();
         return;
       }
+      showSnackBar(context, "注册成功，请登录");
       // setLogin();
       Navigator.pop(context);
     }).catchError((error) {
