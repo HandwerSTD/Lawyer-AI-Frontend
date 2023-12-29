@@ -50,6 +50,7 @@ class _ShortVideoSearchState extends State<ShortVideoSearch> {
   Widget build(BuildContext context) {
     // TODO: Border & Background as Design
     return Scaffold(
+      backgroundColor: bgAccent,
       appBar: AppBar(
         // automaticallyImplyLeading: false,
         // title: const Text('社区'),
@@ -164,7 +165,7 @@ class _SearchAppBarState extends State<SearchAppBar> {
       alignment: Alignment.centerLeft,
       // 设置修饰
       decoration: BoxDecoration(
-          border: Border.all(width: 1, color: Colors.black26),
+          // border: Border.all(width: 0, color: Colors.black26),
           borderRadius: BorderRadius.circular(10),
           color: Color(0xfffefbff)),
       child: TextField(

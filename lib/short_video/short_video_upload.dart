@@ -61,7 +61,7 @@ class _ShortVideoUploadState extends State<ShortVideoUpload> {
                         child: Padding(
                       padding: EdgeInsets.only(bottom: 12),
                       child: TextField(
-                        decoration: outlineBorderedInputDecoration("视频标题", 36),
+                        decoration: outlineBorderedInputDecoration("视频标题", 36, filled: true, fillColor: Colors.white),
                         controller: titleController,
                         style: TextStyle(fontSize: 15),
                       ),
@@ -72,7 +72,7 @@ class _ShortVideoUploadState extends State<ShortVideoUpload> {
                   padding: EdgeInsets.only(bottom: 12),
                   child: TextField(
                     decoration:
-                        outlineBorderedInputDecoration("视频标签，用英文逗号分隔", 36),
+                        outlineBorderedInputDecoration("视频标签，用英文逗号分隔", 36, filled: true, fillColor: Colors.white),
                     controller: tagsController,
                     style: TextStyle(fontSize: 15),
                   ),
@@ -186,7 +186,7 @@ class _ShortVideoUploadState extends State<ShortVideoUpload> {
         minLines: 3,
         maxLines: null,
         keyboardType: TextInputType.multiline,
-        decoration: outlineBorderedInputDecoration("视频简介", 18),
+        decoration: outlineBorderedInputDecoration("视频简介", 18, filled: true, fillColor: Colors.white),
       ),
     );
   }

@@ -19,6 +19,8 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // backgroundColor: Colors.white,
+      backgroundColor: bgAccent,
       appBar: AppBar(
         title: Text("设置"),
       ),
@@ -48,43 +50,53 @@ class _SettingsListState extends State<SettingsList> {
 
   @override
   Widget build(BuildContext context) {
-    return ListView(
-      shrinkWrap: true,
-      children: [
-        settingsItemBlock("消息设置", () {showSnackBar(context, "暂未开放");}),
-        settingsItemBlock("[调试设置] 更改服务器地址", () {
-          showDialog(context: context, builder: (context) {
-            return Dialog(
-              child: Container(
-                padding: EdgeInsets.all(12),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    TextField(
-                      controller: changeServerAddressController,
-                      decoration: InputDecoration(hintText: "服务器地址"),
+    return Container(
+
+      child: Column(
+        mainAxisSize: MainAxisSize.max,
+        children: [
+          Padding(padding: EdgeInsets.symmetric(horizontal: 24), child: Divider(),),
+          ListView(
+            shrinkWrap: true,
+            children: [
+              settingsItemBlock("消息设置", () {showSnackBar(context, "暂未开放");}),
+              settingsItemBlock("[调试设置] 更改服务器地址", () {
+                showDialog(context: context, builder: (context) {
+                  return Dialog(
+                    child: Container(
+                      padding: EdgeInsets.all(12),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          TextField(
+                            controller: changeServerAddressController,
+                            decoration: InputDecoration(hintText: "服务器地址"),
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              TextButton(onPressed: () {
+                                Navigator.pop(context);
+                              }, child: Text("取消")),
+                              TextButton(onPressed: () {
+                                serverAddress = changeServerAddressController.text;
+                                Navigator.pop(context);
+                              }, child: Text("确定"))
+                            ],)
+                        ],
+                      ),
                     ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                      TextButton(onPressed: () {
-                        Navigator.pop(context);
-                      }, child: Text("取消")),
-                      TextButton(onPressed: () {
-                        serverAddress = changeServerAddressController.text;
-                      }, child: Text("确定"))
-                    ],)
-                  ],
-                ),
-              ),
-            );
-          });
-        }),
-        settingsItemBlock("清除缓存", () {showSnackBar(context, "暂未开放");}),
-        settingsItemBlock("关于本应用", () {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => AboutPage()));
-        })
-      ],
+                  );
+                });
+              }),
+              settingsItemBlock("清除缓存", () {showSnackBar(context, "暂未开放");}),
+              settingsItemBlock("关于本应用", () {
+                Navigator.push(context, MaterialPageRoute(builder: (context) => AboutPage()));
+              })
+            ],
+          ),
+        ],
+      )
     );
   }
 

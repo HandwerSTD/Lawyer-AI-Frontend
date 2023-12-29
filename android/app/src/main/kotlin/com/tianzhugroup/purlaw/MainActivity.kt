@@ -1,4 +1,4 @@
-package com.tianzhugroup.lawyer_ai_frontend
+package com.tianzhugroup.purlaw
 
 import io.flutter.embedding.android.FlutterActivity
 

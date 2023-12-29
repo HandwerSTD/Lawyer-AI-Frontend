@@ -48,7 +48,7 @@ class _ShortVideoWaterfallListState extends State<ShortVideoWaterfallList> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      // padding: const EdgeInsets.only(left: 5, right: 5),
+      padding: const EdgeInsets.only(left: 8, right: 8),
       child: WaterfallFlow.count(
         crossAxisCount: 2,
         controller: wfController,
@@ -75,7 +75,7 @@ class _ShortVideoWaterfallListState extends State<ShortVideoWaterfallList> {
                         )));
           },
           child: Padding(
-            padding: EdgeInsets.only(left: 6, right: 4, top: 4, bottom: 12),
+            padding: EdgeInsets.only(left: 12, right: 12, top: 4, bottom: 12),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -89,7 +89,7 @@ class _ShortVideoWaterfallListState extends State<ShortVideoWaterfallList> {
                       imageUrl: video.videoImageLink,
                       placeholder: (context, url) => const Center(
                           child: SizedBox(
-                        height: 300,
+                        height: 100,
                         child: Center(
                           child: CircularProgressIndicator(),
                         ),
@@ -106,7 +106,7 @@ class _ShortVideoWaterfallListState extends State<ShortVideoWaterfallList> {
                     video.videoTitle,
                     overflow: TextOverflow.ellipsis,
                     maxLines: 2,
-                    style: const TextStyle(fontSize: 14, letterSpacing: 0.1),
+                    style: const TextStyle(fontSize: 13, letterSpacing: 0.1),
                   ),
                 ),
                 Padding(
@@ -122,20 +122,21 @@ class _ShortVideoWaterfallListState extends State<ShortVideoWaterfallList> {
                               imageUrl: serverAddress +
                                   API.userAvatar.api +
                                   video.authorIcon,
-                              height: 22,
-                              width: 22,
+                              height: 18,
+                              width: 18,
                               imageBuilder: (context, image) => Container(
-                                    decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(12),
-                                        image: DecorationImage(
-                                            image: image, fit: BoxFit.cover)),
-                                  )),
+                                decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(12),
+                                    image: DecorationImage(
+                                        image: image, fit: BoxFit.cover)),
+                              )),
                           Padding(
-                            padding: EdgeInsets.only(left: 6),
+                            padding: EdgeInsets.only(left: 6, right: 1),
                             child: Text(
                               video.author,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
+                              style: TextStyle(fontSize: 12),
                             ),
                           )
                         ],
@@ -144,6 +145,7 @@ class _ShortVideoWaterfallListState extends State<ShortVideoWaterfallList> {
                         // crossAxisAlignment: en,
                         children: [
                           const Icon(
+                            size: 16,
                             TypIconData(0xE087),
                             color: Color(0xbb000000),
                           ),

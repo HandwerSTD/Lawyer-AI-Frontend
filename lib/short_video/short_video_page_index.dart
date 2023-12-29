@@ -29,6 +29,7 @@ class _ShortVideoPageIndexState extends State<ShortVideoPageIndex> {
 
   @override
   void initState() {
+    // print("server = $serverAddress");
     super.initState();
     getVideoList((vid) {
       if (mounted) {
@@ -93,84 +94,87 @@ class _ShortVideoPageIndexState extends State<ShortVideoPageIndex> {
           ],
         ),
       ),
-      body: Center(
+      body: Container(
+          alignment: Alignment.center,
+          decoration: BoxDecoration(color: bgAccent),
           child: Stack(children: [
-        Column(
-          children: [
-            Expanded(
-              child: Stack(
-                alignment: Alignment.bottomRight,
-                children: [
-                  RefreshIndicator(
-                      child: (isNetworkError
-                          ? NetworkErrorPlaceholder()
-                          : ShortVideoWaterfallList(
-                              videoList: sttVideoList,
-                              loggedAccount: widget.loggedAccount,
-                              providedAuthorAvatar: '',
-                              loadMore: () async {
-                                return videoRecommendLoadMoreContent((vid) {
-                                  setState(() {
-                                    sttVideoList.add(vid);
-                                  });
-                                }, () {
-                                  setState(() {
-                                    isNetworkError = true;
-                                  });
-                                }, () {});
-                              },
-                            )),
-                      onRefresh: () async {
-                        setState(() {
-                          sttVideoList.clear();
-                          isNetworkError = false;
-                        });
-                        await getVideoList((vid) {
-                          setState(() {
-                            sttVideoList.add(vid);
-                          });
-                        }, () {
-                          setState(() {
-                            isNetworkError = true;
-                          });
-                        });
-                      }),
-                  Padding(
-                    padding: EdgeInsets.all(24),
-                    child: FloatingActionButton.extended(
-                      onPressed: () {
-                        if (widget.loggedAccount.cookie == "") {
-                          ScaffoldMessenger.of(context)
-                              .showSnackBar(const SnackBar(
-                            content: Text("请先登录"),
-                            duration: Duration(milliseconds: 1000),
-                          ));
-                          return;
-                        }
-                        ImagePicker()
-                            .pickVideo(source: ImageSource.gallery)
-                            .then((selectVideo) {
-                          if (selectVideo == null) return;
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => ShortVideoUpload(
-                                        loggedAccount: widget.loggedAccount,
-                                        selectedFile: selectVideo,
-                                      )));
-                        });
-                      },
-                      isExtended: true,
-                      label: const Text("上传视频"),
-                      icon: const Icon(Icons.add),
-                    ),
-                  )
-                ],
-              ),
-            )
-          ],
-        ),
-      ])),
+            Column(
+              children: [
+                // Divider(height: 1,),
+                Expanded(
+                  child: Stack(
+                    alignment: Alignment.bottomRight,
+                    children: [
+                      RefreshIndicator(
+                          child: (isNetworkError
+                              ? NetworkErrorPlaceholder()
+                              : ShortVideoWaterfallList(
+                                  videoList: sttVideoList,
+                                  loggedAccount: widget.loggedAccount,
+                                  providedAuthorAvatar: '',
+                                  loadMore: () async {
+                                    return videoRecommendLoadMoreContent((vid) {
+                                      setState(() {
+                                        sttVideoList.add(vid);
+                                      });
+                                    }, () {
+                                      setState(() {
+                                        isNetworkError = true;
+                                      });
+                                    }, () {});
+                                  },
+                                )),
+                          onRefresh: () async {
+                            setState(() {
+                              sttVideoList.clear();
+                              isNetworkError = false;
+                            });
+                            await getVideoList((vid) {
+                              setState(() {
+                                sttVideoList.add(vid);
+                              });
+                            }, () {
+                              setState(() {
+                                isNetworkError = true;
+                              });
+                            });
+                          }),
+                      Padding(
+                        padding: EdgeInsets.all(24),
+                        child: FloatingActionButton.extended(
+                          onPressed: () {
+                            if (widget.loggedAccount.cookie == "") {
+                              ScaffoldMessenger.of(context)
+                                  .showSnackBar(const SnackBar(
+                                content: Text("请先登录"),
+                                duration: Duration(milliseconds: 1000),
+                              ));
+                              return;
+                            }
+                            ImagePicker()
+                                .pickVideo(source: ImageSource.gallery)
+                                .then((selectVideo) {
+                              if (selectVideo == null) return;
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => ShortVideoUpload(
+                                            loggedAccount: widget.loggedAccount,
+                                            selectedFile: selectVideo,
+                                          )));
+                            });
+                          },
+                          isExtended: true,
+                          label: const Text("上传视频"),
+                          icon: const Icon(Icons.add),
+                        ),
+                      )
+                    ],
+                  ),
+                )
+              ],
+            ),
+          ])),
     );
   }
 }

@@ -81,28 +81,6 @@ class _ShortVideoPlayState extends State<ShortVideoPlay> {
           onPageChanged: (index) async {
             if (index == videos.length - 1) {
               print("[ShortVideoPlay] Scrolled to end");
-              // videoRecommendLoadMoreContent(
-              //     (vid) => (vid) {
-              //           setState(() {
-              //             videos.add(vid);
-              //           });
-              //         }, () {
-              //   ScaffoldMessenger.of(context)
-              //       .showSnackBar(SnackBar(content: Text("网络错误")));
-              // }, () {
-              //   setState(() {
-              //     print("[ShortVideoPlay] Loading more data");
-              //     for (int ind = videos.length - 1;
-              //         ind < videos.length;
-              //         ++ind) {
-              //       print("[ShortVideoPlay] Loading $ind");
-              //       pageViewList.add(VideoPlayBlock(
-              //         nowPlaying: videos[ind],
-              //         loggedAccount: widget.loggedAccount,
-              //       ));
-              //     }
-              //   });
-              // });
               await widget.loadVideo();
               setState(() {
                 print("[ShortVideoPlay] Loading more data");
@@ -136,8 +114,19 @@ class VideoPlayBlock extends StatefulWidget {
 class _VideoPlayBlockState extends State<VideoPlayBlock> {
   late VideoPlayerController videoPlayerController;
   late ChewieController videoController;
-  bool isPlaying = true;
+  // bool isPlaying = true;
   bool loaded = false;
+
+  void pauseVideo() {
+    setState(() {
+      videoPlayerController.pause();
+    });
+  }
+  void resumeVideo() {
+    setState(() {
+      videoPlayerController.play();
+    });
+  }
 
   @override
   void initState() {
@@ -164,6 +153,7 @@ class _VideoPlayBlockState extends State<VideoPlayBlock> {
               aspectRatio: videoPlayerController.value.aspectRatio);
           loaded = true;
         });
+        resumeVideo();
       });
   }
 
@@ -177,22 +167,23 @@ class _VideoPlayBlockState extends State<VideoPlayBlock> {
   @override
   Widget build(BuildContext context) {
     var appBarHeight = MediaQuery.of(context).size.height * 0.8;
+
     return GestureDetector(
       onTap: () {
         if (!loaded) return;
         if (videoPlayerController.value.isPlaying) {
-          videoPlayerController.pause();
+          pauseVideo();
         } else {
-          videoPlayerController.play();
+          resumeVideo();
         }
-        setState(() {
-          isPlaying = !isPlaying;
-        });
+        // setState(() {
+        //   isPlaying = !isPlaying;
+        // });
       },
       onDoubleTap: () {
         if (!loaded) return;
         if (widget.nowPlaying.liked == -1) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
             content: Text("请先登录"),
             duration: Duration(milliseconds: 1000),
           ));
@@ -241,8 +232,8 @@ class _VideoPlayBlockState extends State<VideoPlayBlock> {
                   ),
                   Icon(
                     Icons.play_arrow,
-                    color: (isPlaying ? Colors.transparent : Colors.white70),
-                    shadows: (!isPlaying ? kElevationToShadow[6] : []),
+                    color: ((!loaded || (loaded && videoController.isPlaying)) ? Colors.transparent : Colors.white70),
+                    shadows: ((!loaded || (loaded && videoController.isPlaying)) ? [] : kElevationToShadow[6]),
                     size: 60,
                   ),
                 ],
@@ -373,16 +364,16 @@ class _VideoPlayBlockState extends State<VideoPlayBlock> {
     return GestureDetector(
       onTap: () {
         if (!loaded) return;
-        videoController.pause();
-        setState(() {
-          isPlaying = false;
-        });
+        pauseVideo();
+        // setState(() {
+        //   isPlaying = false;
+        // });
         Navigator.push(
             context,
             MaterialPageRoute(
                 builder: (context) => MyAccount(
                       loggedAccount: AccountDataModel(video.author,
-                          video.authorUid, video.authorIcon, "-1"),
+                          video.authorUid, video.authorIcon, widget.loggedAccount.cookie),
                       isVisitor: true,
                     )));
       },
@@ -443,10 +434,7 @@ class _VideoPlayBlockState extends State<VideoPlayBlock> {
             icon: Icons.comment,
             onPressed: () {
               if (!loaded) return;
-              videoController.pause();
-              setState(() {
-                isPlaying = false;
-              });
+              pauseVideo();
               Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -455,22 +443,24 @@ class _VideoPlayBlockState extends State<VideoPlayBlock> {
                             loggedAccount: widget.loggedAccount,
                           )));
             }),
-        bottomFABSingle(
-            icon: Icons.share,
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                content: Text("暂未开放"),
-                duration: Duration(milliseconds: 1000),
-              ));
-            }),
+        // bottomFABSingle(
+        //     icon: Icons.share,
+        //     onPressed: () {
+        //       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        //         content: Text("暂未开放"),
+        //         duration: Duration(milliseconds: 1000),
+        //       ));
+        //     }),
       ],
     );
   }
 
   Widget bottomFABSingle(
       {required IconData icon, required Function onPressed}) {
-    return Padding(
-      padding: const EdgeInsets.all(12),
+    return Container(
+      height: 52,
+      width: 52,
+      margin: const EdgeInsets.all(12),
       child: IconButton(
         onPressed: () {
           onPressed();

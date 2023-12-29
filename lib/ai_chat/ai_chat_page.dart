@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lawyer_ai_frontend/ai_chat/chat_history.dart';
 import 'package:lawyer_ai_frontend/common/theme/theme.dart';
 
 import '../common/data_model/data_models.dart';
@@ -39,15 +40,18 @@ class _AIChatPageState extends State<AIChatPage> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      // TODO: Border & Background as Design
+      decoration: BoxDecoration(
+        color: themeAccent
+      ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
+          Divider(height: 1,),
           Expanded(
               child: ListView(
-            physics: (!sttIsInputable
-                ? NeverScrollableScrollPhysics()
-                : ClampingScrollPhysics()),
+            // physics: (!sttIsInputable
+            //     ? NeverScrollableScrollPhysics()
+            //     : ClampingScrollPhysics()),
             shrinkWrap: true,
             controller: scrollController,
             children: sttChatMsgList.map((e) => chatMessageBlock(e)).toList(),
@@ -67,7 +71,8 @@ class _AIChatPageState extends State<AIChatPage> {
     TextEditingController controller = TextEditingController();
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      color: Color(0xffebe8fc),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         mainAxisSize: MainAxisSize.max,
@@ -81,6 +86,7 @@ class _AIChatPageState extends State<AIChatPage> {
               onPressed: () {
                 // TODO: Voice Recognize
                 showSnackBar(context, "暂未开放");
+                // Navigator.push(context, MaterialPageRoute(builder: (context) => ChatHistory()));
               },
               icon: Container(
                 padding: const EdgeInsets.all(3),
@@ -95,6 +101,7 @@ class _AIChatPageState extends State<AIChatPage> {
             margin: const EdgeInsets.only(left: 5),
             child: ElevatedButton(
               onPressed: () {
+                // print("[ChatAPI] server = $serverAddress");
                 // Pre init
                 if (widget.loggedAccount.cookie == "") {
                   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
@@ -149,7 +156,7 @@ class _AIChatPageState extends State<AIChatPage> {
   Widget chatMessageBlock(ChatMsgData msgData) {
     Color foreground = (msgData.isMine ? Colors.white : Colors.black87);
     Color background =
-        (msgData.isMine ? Colors.blueAccent : const Color(0xFFF0F0F0));
+        (msgData.isMine ? Colors.blueAccent : Color(0xffffffff));
     double leftMargin = 24 + (msgData.isMine ? 24 : 0);
     double rightMargin = 24;
     return Row(
@@ -164,7 +171,7 @@ class _AIChatPageState extends State<AIChatPage> {
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
                 color: background,
-                boxShadow: [textBlockBoxShadow],
+                // boxShadow: [textBlockBoxShadow],
                 borderRadius: BorderRadius.only(
                     topLeft: const Radius.circular(20),
                     topRight: const Radius.circular(20),
@@ -178,7 +185,7 @@ class _AIChatPageState extends State<AIChatPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 SelectableText(
-                  msgData.message,
+                  (msgData.message == "" ? "思考中..." : msgData.message),
                   // softWrap: true,
                   style:
                       TextStyle(color: foreground, height: 1.5, fontSize: 15),
@@ -222,7 +229,7 @@ class _AIChatPageState extends State<AIChatPage> {
         maxLines: null,
         keyboardType: TextInputType.multiline,
         decoration:
-            outlineBorderedInputDecoration("向紫小藤问点什么吧", 24, dense: true),
+            outlineBorderedInputDecoration("向紫小藤问点什么吧", 24, dense: true, filled: true, fillColor: Colors.white),
       ),
     );
   }

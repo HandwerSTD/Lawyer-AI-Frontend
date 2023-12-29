@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lawyer_ai_frontend/common/constant/constants.dart';
 import 'package:lawyer_ai_frontend/common/theme/theme.dart';
+import 'package:lawyer_ai_frontend/settings/about/eula_page.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class AboutPage extends StatelessWidget {
@@ -9,6 +10,7 @@ class AboutPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: bgAccent,
       appBar: AppBar(
         title: Text("关于应用"),
       ),
@@ -33,7 +35,7 @@ class AboutPage extends StatelessWidget {
                       child: Text("用户协议", style: TextStyle(color: Colors.blueAccent),),
                       onTap: () {
                         // TODO: 用户协议
-                        launchUrl(Uri.parse(privacyStatementAddress), mode: LaunchMode.externalApplication);
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => EULAPage()));
                       },
                     ),
                     Text("与"),
@@ -41,7 +43,8 @@ class AboutPage extends StatelessWidget {
                       child: Text("开放源代码许可", style: TextStyle(color: Colors.blueAccent),),
                       onTap: () {
                         // TODO: 用户协议
-                        launchUrl(Uri.parse(privacyStatementAddress), mode: LaunchMode.externalApplication);
+                        // launchUrl(Uri.parse(privacyStatementAddress), mode: LaunchMode.externalApplication);
+                        showSnackBar(context, "暂未开放");
                       },
                     ),
                   ],

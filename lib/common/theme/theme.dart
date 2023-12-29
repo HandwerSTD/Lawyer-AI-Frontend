@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
-
 final themeAccent = Color(0xffded9fa);
+final buttonThemeAccent = Color(0xff816cfd);
+final bgAccent = Color(0xffebe8fc);
 final BoxShadow fabBoxShadow = BoxShadow(
     color: Colors.black,
     offset: Offset.fromDirection(1, 1),
@@ -10,9 +11,9 @@ final BoxShadow fabBoxShadow = BoxShadow(
 
 final BoxShadow textBlockBoxShadow = BoxShadow(
     color: Colors.black26,
-    offset: Offset.fromDirection(1, 1.3),
-    spreadRadius: 0.05,
-    blurRadius: 3);
+    offset: Offset.fromDirection(1, 1.1),
+    spreadRadius: 0.01,
+    blurRadius: 5);
 
 Widget appBarIconButton(
     {required Icon icon,
@@ -155,7 +156,6 @@ class _ExpandableTextState extends State<ExpandableText> {
   }
 }
 
-
 class NetworkErrorPlaceholder extends StatelessWidget {
   const NetworkErrorPlaceholder({super.key});
 
@@ -165,31 +165,31 @@ class NetworkErrorPlaceholder extends StatelessWidget {
       width: 500,
       height: 500,
       child: Column(
-        children: [
-          Icon(Icons.wifi_off),
-          Text("网络错误")
-        ],
+        children: [Icon(Icons.wifi_off), Text("网络错误")],
       ),
     );
   }
 }
 
 InputDecoration outlineBorderedInputDecoration(String hint, double rad,
-    {bool dense = false}) => InputDecoration(
-  isDense: dense,
-  contentPadding: EdgeInsets.symmetric(vertical: 8.5, horizontal: 12),
-  border: OutlineInputBorder(
-    // borderSide: BorderSide(width: 1, color: Colors.lightBlue),
-    borderRadius: BorderRadius.all(Radius.circular(rad))
-  ),
-  // filled: true,
-  // fillColor: Colors.grey[200],
-  hintText: hint,
-  hintStyle: TextStyle(color: Colors.grey),
-);
+        {bool dense = false, bool filled = false, fillColor}) =>
+    InputDecoration(
+      isDense: dense,
+      contentPadding: EdgeInsets.symmetric(vertical: 8.5, horizontal: 12),
+      border: OutlineInputBorder(
+          borderSide: BorderSide.none,
+          borderRadius: BorderRadius.all(Radius.circular(rad))),
+      filled: filled,
+      fillColor: fillColor,
+      hintText: hint,
+      hintStyle: TextStyle(color: Colors.grey),
+    );
 
 void showSnackBar(BuildContext context, String text, {int seconds = 1}) {
-  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text), duration: Duration(seconds: seconds),));
+  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+    content: Text(text),
+    duration: Duration(seconds: seconds),
+  ));
 }
 
 Widget appIconImage({margin = const EdgeInsets.only(bottom: 12, top: 48)}) {
@@ -197,6 +197,8 @@ Widget appIconImage({margin = const EdgeInsets.only(bottom: 12, top: 48)}) {
     width: 96,
     height: 96,
     margin: margin,
-    child: Image.asset("assets/rounded_app_icon.png",),
+    child: Image.asset(
+      "assets/rounded_app_icon.png",
+    ),
   );
 }

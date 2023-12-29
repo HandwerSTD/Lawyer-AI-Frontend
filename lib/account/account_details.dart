@@ -19,6 +19,7 @@ class _AccountDetailsState extends State<AccountDetails> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: bgAccent,
       appBar: AppBar(
         title: Text("编辑我的信息"),
       ),

@@ -9,28 +9,6 @@ import 'package:lawyer_ai_frontend/settings/settings_page.dart';
 import 'package:lawyer_ai_frontend/short_video/apis/short_video_api.dart';
 import 'package:lawyer_ai_frontend/short_video/short_video_list.dart';
 
-// class AccountPage extends StatefulWidget {
-//   AccountDataModel loggedAccount;
-//   AccountPage({super.key, required this.loggedAccount});
-//
-//   @override
-//   State<AccountPage> createState() => _AccountPageState();
-// }
-//
-// class _AccountPageState extends State<AccountPage> {
-//   @override
-//   Widget build(BuildContext context) {
-//     return widget.loggedAccount.cookie == ""
-//         ? AccountLogin(
-//             isFirstLogin: false,
-//             loggedAccount: widget.loggedAccount,
-//           )
-//         : MyAccount(
-//             loggedAccount: widget.loggedAccount,
-//           );
-//   }
-// }
-
 class MyAccount extends StatefulWidget {
   AccountDataModel loggedAccount;
   bool isVisitor;
@@ -107,51 +85,55 @@ class _MyAccountState extends State<MyAccount> {
         title: Text(title),
         actions: appBarItems,
       ),
-      body: Column(
-        mainAxisSize: MainAxisSize.max,
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          myAccountBlock(),
-          Row(
-            mainAxisSize: MainAxisSize.max,
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              Padding(
-                padding: EdgeInsets.only(left: 36, top: 12, bottom: 12),
-                child: Text(
-                  listTitle + (videoList.isEmpty ? "" : " ${widget.loggedAccount.videoNum} 条"),
-                  style: TextStyle(
-                    fontSize: 18,
+      body: Container(
+        // color: themeAccent,
+        color: Color(0xffebe8fc),
+        child: Column(
+          mainAxisSize: MainAxisSize.max,
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            myAccountBlock(),
+            Row(
+              mainAxisSize: MainAxisSize.max,
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: EdgeInsets.only(left: 36, top: 12, bottom: 12),
+                  child: Text(
+                    listTitle + (videoList.isEmpty ? "" : " ${widget.loggedAccount.videoNum} 条"),
+                    style: TextStyle(
+                      fontSize: 18,
+                    ),
                   ),
                 ),
-              ),
-            ],
-          ),
-          (widget.loggedAccount.cookie == ""
-              ? const Text("请先登录")
-              : (videoList.isEmpty
-                  ? const Text("空空如也")
-                  : Expanded(
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 8),
-                        child: ShortVideoWaterfallList(
-                          videoList: videoList,
-                          loggedAccount: widget.loggedAccount,
-                          providedAuthorAvatar: widget.loggedAccount.avatar,
-                          loadMore: () {
-                            loadVideoByUser(uid: widget.loggedAccount.uid, pageNum: pageNum, add: (vid) {
-                              setState(() {
-                                videoList.add(vid);
-                              });
-                            }, setNetworkError: () {}).then((value) {
-                              if (value != 0) {
-                                ++pageNum;
-                              }
-                            });
-                          },
-                        ),
-                      ))))
-        ],
+              ],
+            ),
+            (widget.loggedAccount.cookie == ""
+                ? const Text("请先登录")
+                : (videoList.isEmpty
+                ? const Text("空空如也")
+                : Expanded(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 8),
+                  child: ShortVideoWaterfallList(
+                    videoList: videoList,
+                    loggedAccount: widget.loggedAccount,
+                    providedAuthorAvatar: widget.loggedAccount.avatar,
+                    loadMore: () {
+                      loadVideoByUser(uid: widget.loggedAccount.uid, pageNum: pageNum, add: (vid) {
+                        setState(() {
+                          videoList.add(vid);
+                        });
+                      }, setNetworkError: () {}).then((value) {
+                        if (value != 0) {
+                          ++pageNum;
+                        }
+                      });
+                    },
+                  ),
+                ))))
+          ],
+        ),
       ),
     );
   }
@@ -181,10 +163,14 @@ class _MyAccountState extends State<MyAccount> {
         setState(() {});
       },
       child: Container(
-        margin: EdgeInsets.only(left: 24, right: 24, bottom: 12),
+        margin: EdgeInsets.only(left: 24, right: 24, bottom: 12, top: 18),
         child: Card(
+          // shadowColor: Colors.black26,
+          color: themeAccent,
+          surfaceTintColor: Color(0xffebe8fc),
+          elevation: 0,
           child: Padding(
-            padding: EdgeInsets.all(12),
+            padding: EdgeInsets.only(left: 24, top: 12, bottom: 12),
             child: Row(
               children: [
                 accountAvatar(),
@@ -210,11 +196,12 @@ class _MyAccountState extends State<MyAccount> {
         ? const Icon(
             Icons.account_circle,
             size: 48,
+      color: Colors.black87,
           )
         : CachedNetworkImage(
             imageBuilder: (context, image) => Container(
               decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(48),
                   image: DecorationImage(image: image, fit: BoxFit.cover)),
             ),
             imageUrl: serverAddress +

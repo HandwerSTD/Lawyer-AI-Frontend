@@ -21,6 +21,7 @@ class ShortVideoCommentPage extends StatelessWidget {
         title: Text("评论"),
       ),
       body: ShortVideoCommentList(video: video, loggedAccount: loggedAccount,),
+      backgroundColor: bgAccent,
     );
   }
 }
@@ -71,7 +72,7 @@ class _ShortVideoCommentListState extends State<ShortVideoCommentList> {
       mainAxisSize: MainAxisSize.max,
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Expanded(child: (commentList.length == 0 ? Text("空空如也"): ListView(
+        Expanded(child: (commentList.length == 0 ? Text("\n空空如也"): ListView(
           controller: controller,
           children: List.generate(commentList.length, (index) => Container(
             padding: EdgeInsets.only(left: 24, right: 24, top: 12),
